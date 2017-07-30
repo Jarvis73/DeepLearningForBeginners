@@ -7,12 +7,14 @@ Load the mnist data sets
 @author: Jarvis ZHANG
 @date: 2017/7/28
 @framework: Tensorflow
+@editor: VS Code
 """
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 import sklearn.preprocessing as prep
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -61,3 +63,14 @@ def pseudo_batch(data, batch_size, seed=None):
     start_index = pseudo.randint(0, len(data) - batch_size)
     return data[start_index:(start_index + batch_size)]
 
+def summary_mnist_img():
+    ''' List some images of the mnist data sets '''
+    fig, axes = plt.subplots(10, 1, figsize=(6, 40))
+    for i in range(10):
+        idx = np.argwhere(mnist.validation.labels[:, i] == 1)[:8]
+        imgs = np.column_stack(mnist.validation.images[idx].reshape(8, 28, 28))
+        axes[i].axis('off')
+        axes[i].imshow(imgs, cmap='gray')
+    plt.show()
+
+summary_mnist_img()

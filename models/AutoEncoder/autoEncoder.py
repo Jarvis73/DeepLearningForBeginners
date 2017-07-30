@@ -7,6 +7,7 @@ Implementation of Denoising AutoEncoder with one hidden layer.
 @author: Jarvis ZHANG
 @date: 2017/7/28
 @framework: Tensorflow
+@editor: VS Code
 """
 
 import numpy as np
@@ -28,12 +29,12 @@ class AdditiveGuassianNoiseAutoEncoder(object):
     def __init__(self, nInput, nHidden, activate_function=tf.nn.softplus,
                 optimizer=tf.train.AdamOptimizer(), scale=0.1):
         ''' Only one hidden layer
-        Params:
-            nInput - integer: number of input variables
-            nHidden - integer: number of hidden neurons
-            activate_function - function: activate function, default softplus
-            optimizer - function(): optimizer, default Adam
-            scale - float: coefficient of Guassian noise, default 0.1
+        ### Params:
+            * nInput - integer: number of input variables
+            * nHidden - integer: number of hidden neurons
+            * activate_function - function: activate function, default softplus
+            * optimizer - function(): optimizer, default Adam
+            * scale - float: coefficient of Guassian noise, default 0.1
         '''
         self.nInput = nInput
         self.nOutput = nInput
@@ -64,10 +65,10 @@ class AdditiveGuassianNoiseAutoEncoder(object):
 
     def _initialize_weights(self):
         ''' Initialize connection weights and biases 
-        Params:
-            None
-        Return:
-            all_weights - dict: all the weights and biases
+        ### Params:
+            * None
+        ### Return:
+            * all_weights - dict: all the weights and biases
         '''
         all_weights = dict()
         all_weights['w1'] = tf.Variable(xavier_init(self.nInput, self.nHidden))
@@ -78,10 +79,10 @@ class AdditiveGuassianNoiseAutoEncoder(object):
 
     def step_train(self, train_batch):
         ''' Calculate cost and execute one step train
-        Params:
-            train_batch - tensor: a train batch
-        Return:
-            cost - tensor: train cost
+        ### Params:
+            * train_batch - tensor: a train batch
+        ### Return:
+            * cost - tensor: train cost
         '''
         cost, _ = self.sess.run((self.cost, self.optimizer), 
                             feed_dict={self.x: train_batch, 
@@ -90,10 +91,10 @@ class AdditiveGuassianNoiseAutoEncoder(object):
 
     def cost_test(self, test_batch):
         ''' Calculate the cost of one test batch on current networks
-        Params: 
-            test_batch - tensor: a test batch
-        Return:
-            cost - tensor: test cost
+        ### Params: 
+            * test_batch - tensor: a test batch
+        ### Return:
+            * cost - tensor: test cost
         '''
         return self.sess.run(self.cost,
                             feed_dict={self.x: test_batch, 
@@ -101,10 +102,10 @@ class AdditiveGuassianNoiseAutoEncoder(object):
 
     def encoder(self, batch):
         ''' A interface to abtain abstract feature from hidden layer
-        Params:
-            batch - tensor: input batch
-        Return:
-            hidden - tensor: output of the hidden layer
+        ### Params:
+            * batch - tensor: input batch
+        ### Return:
+            * hidden - tensor: output of the hidden layer
         '''
         return self.sess.run(self.hidden,
                             feed_dict={self.x: batch, 
@@ -112,10 +113,10 @@ class AdditiveGuassianNoiseAutoEncoder(object):
 
     def decoder(self, hidden=None):
         ''' A interface to abtain recovery data
-        Params:
-            hidden - tensor: output of the hidden layer
-        Return:
-            reconstruction - tensor: recovery data
+        ### Params:
+            * hidden - tensor: output of the hidden layer
+        ### Return:
+            * reconstruction - tensor: recovery data
         '''
         if hidden is None:
             hidden = np.random.normal(size=self.weights['b1'])
@@ -124,10 +125,10 @@ class AdditiveGuassianNoiseAutoEncoder(object):
 
     def reconstruct(self, batch):
         ''' Finish one step of encoding and decoding
-        Params: 
-            batch - tensor: original data
-        Return:
-            reconstruction - tensor: recovery data
+        ### Params: 
+            * batch - tensor: original data
+        ### Return:
+            * reconstruction - tensor: recovery data
         '''
         return self.sess.run(self.reconstruction,
                             feed_dict={self.x: batch,
@@ -135,19 +136,19 @@ class AdditiveGuassianNoiseAutoEncoder(object):
 
     def getWeights1(self):
         ''' Get the weights of the hidden layer
-        Params:
-            None
-        Return:
-            weights - tensor: weights of the hidden layer
+        ### Params:
+            * None
+        ### Return:
+            * weights - tensor: weights of the hidden layer
         '''
         return self.sess.run(self.weights['w1'])
 
     def getBiases1(self):
         ''' Get the biases of the hidden layer
-        Params:
-            None
-        Return:
-            biases - tensor: biases of the hidden layer
+        ### Params:
+            * None
+        ### Return:
+            * biases - tensor: biases of the hidden layer
         '''
         return self.sess.run(self.weights['b1'])
 

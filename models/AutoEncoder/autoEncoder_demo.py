@@ -8,6 +8,7 @@ Visualization of the mnist data sets and networks output
 @author: Jarvis ZHANG
 @date: 2017/7/28s
 @framework: Tensorflow
+@editor: VS Code
 """
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'

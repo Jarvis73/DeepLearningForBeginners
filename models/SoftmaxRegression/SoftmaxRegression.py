@@ -9,6 +9,7 @@ output layer. The formula is :
 @author: Jarvis ZHANG
 @date: 2017/7/28
 @framework: Tensorflow
+@editor: VS Code
 """
 
 import os
@@ -22,6 +23,7 @@ show_data_shape()
 # Super parameters
 LEARNING_RATE = 0.5
 TRAINING_STEPS = 20001
+BATCH_SIZE = 100
 TEST_STEP = 1000
 
 """ Define the calculation graph """ 
@@ -29,11 +31,11 @@ TEST_STEP = 1000
 x = tf.placeholder(tf.float32, [None, 784])
 y_label = tf.placeholder(tf.float32, [None, 10])
 
-# Network: weights and biases
+# Networks: weights and biases
 W = tf.Variable(tf.zeros([784, 10]))
 b = tf.Variable(tf.zeros([10]))
 
-# Activate function
+# Networks: output layer
 y = tf.nn.softmax(tf.add(tf.matmul(x, W), b))
 
 # Loss function
@@ -52,7 +54,7 @@ with tf.Session() as sess:
 
     # Training
     for i in range(TRAINING_STEPS):
-        img_batch, lab_batch = mnist.train.next_batch(100)
+        img_batch, lab_batch = mnist.train.next_batch(BATCH_SIZE)
         step_train.run({x: img_batch, y_label: lab_batch})
 
         if i % TEST_STEP == 0:

@@ -1,15 +1,15 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 
 """
-Load the mnist data sets
+Load MNIST data sets.
 
 @author: Jarvis ZHANG
-@date: 2017/7/28
+@date: 2017/7/30
 @framework: Tensorflow
-@editor: VS Code
 """
 import os
+# 禁止tensorflow显示　需要编译tensorflow库
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import numpy as np
@@ -27,4 +27,5 @@ def show_data_shape():
     table.add_row(["test", mnist.test.images.shape, mnist.test.labels.shape])
     table.add_row(["validation", mnist.validation.images.shape, mnist.validation.labels.shape])
     print(table)
+
 
