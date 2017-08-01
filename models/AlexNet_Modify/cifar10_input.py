@@ -167,7 +167,7 @@ def distorted_inputs(data_dir, batch_size):
   # Image processing for training the network. Note the many random
   # distortions applied to the image.
 
-  # Randomly crop a [height, width] section of the image.
+  # Randomly crop a [height, width] section of the i mage.
   distorted_image = tf.random_crop(reshaped_image, [height, width, 3])
 
   # Randomly flip the image horizontally.

@@ -21,7 +21,7 @@ import autoEncoder
 from loadData import N_SAMPLES, mnist
 from loadData import next_batch, input_normalization, pseudo_batch
 
-# Some super parameters
+# Some hyper-parameters
 TRAINING_EPOCHS = 10
 BATCH_SIZE = 128
 TEST_SIZE = 8

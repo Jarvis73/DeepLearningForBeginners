@@ -12,13 +12,15 @@ Load cifar-10 data set
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
+import sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from matplotlib import gridspec
 import cifar10, cifar10_input
+
+IMAGE_SIZE = 24
 
 path = "/home/jarvis/DataSet/cifar-10-batches-bin"
 label_name = "batches.meta.txt"
@@ -101,3 +103,39 @@ def summary_cifar_img():
 
     plt.show()
 
+def distorted_cifar_image():
+    ''' Create distorted images and display. '''
+    file_path = os.path.join(path, bin_file)
+    images, labels = read_cifar10(file_path, 1)
+    images = images.transpose(0, 2, 3, 1)
+    _images = tf.constant(images, shape=[32, 32, 3])
+
+    # distort the images
+    changed1 = tf.image.central_crop(_images, central_fraction=0.6)
+    changed2 = tf.image.flip_left_right(_images)
+    changed3 = tf.image.flip_up_down(_images)
+    changed4 = tf.image.adjust_brightness(_images, delta=0.2)
+    changed5 = tf.image.adjust_contrast(_images, contrast_factor=1.2)
+
+    # Calculate
+    sess = tf.InteractiveSession()
+    fig1, fig2, fig3, fig4, fig5 = sess.run([changed1, changed2, changed3, changed4, changed5])
+    sess.close()
+
+    # Display
+    fig, axes = plt.subplots(2, 3, figsize=(3, 2))
+    axes[0,0].axis('off')
+    axes[0,0].imshow(images.reshape(32, 32, 3))
+    axes[0,1].axis('off')
+    axes[0,1].imshow(fig1)
+    axes[0,2].axis('off')
+    axes[0,2].imshow(fig2)
+    axes[1,0].axis('off')
+    axes[1,0].imshow(fig3)
+    axes[1,1].axis('off')
+    axes[1,1].imshow(fig4)
+    axes[1,2].axis('off')
+    axes[1,2].imshow(fig5)
+    plt.show()
+
+distorted_cifar_image()

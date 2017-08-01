@@ -18,7 +18,7 @@ from loadData import mnist, N_SAMPLES, show_data_shape
 
 show_data_shape()
 
-# Super parameters
+# Some hyper-parameters
 LEARNING_RATE = 1e-4
 TRAINING_STEPS = 20000
 BATCH_SIZE = 50
