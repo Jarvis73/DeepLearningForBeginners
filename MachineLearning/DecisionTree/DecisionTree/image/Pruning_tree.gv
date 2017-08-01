@@ -1,0 +1,22 @@
+// Pruning_tree
+digraph {
+	0 [label="脐部" fontname=SimSun shape=box]
+	1 [label="好瓜" fontname=SimSun]
+		0 -> 1 [label="凹陷" fontname=STKaiti]
+	2 [label="根蒂" fontname=SimSun shape=box]
+		0 -> 2 [label="稍凹" fontname=STKaiti]
+	3 [label="坏瓜" fontname=SimSun]
+		2 -> 3 [label="蜷缩" fontname=STKaiti]
+	4 [label="色泽" fontname=SimSun shape=box]
+		2 -> 4 [label="稍蜷" fontname=STKaiti]
+	5 [label="好瓜" fontname=SimSun]
+		4 -> 5 [label="青绿" fontname=STKaiti]
+	6 [label="好瓜" fontname=SimSun]
+		4 -> 6 [label="乌黑" fontname=STKaiti]
+	7 [label="好瓜" fontname=SimSun]
+		4 -> 7 [label="浅白" fontname=STKaiti]
+	8 [label="好瓜" fontname=SimSun]
+		2 -> 8 [label="硬挺" fontname=STKaiti]
+	9 [label="坏瓜" fontname=SimSun]
+		0 -> 9 [label="平坦" fontname=STKaiti]
+}

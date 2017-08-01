@@ -18,10 +18,10 @@ dog, frog, horse, ship, truck。
 ## Networks
 |Layer名称 |描述              |
 |:-------|:---------------|
-|conv1    |卷基层和ReLU激活函数|
+|conv1    |卷积层和ReLU激活函数|
 |pool1    |最大池化|
 |norm1    |LRN|
-|conv2    |卷基层和ReLU激活函数|
+|conv2    |卷积层和ReLU激活函数|
 |norm2    |LRN|
 |pool2    |最大池化|
 |fc1      |全连接层和ReLU激活函数|
