@@ -1,0 +1,6 @@
+model_checkpoint_path: "/home/jarvis/documents/MLearning/DeepLearning/TensorBoard/log_dir/model.ckpt-999"
+all_model_checkpoint_paths: "/home/jarvis/documents/MLearning/DeepLearning/TensorBoard/log_dir/model.ckpt-599"
+all_model_checkpoint_paths: "/home/jarvis/documents/MLearning/DeepLearning/TensorBoard/log_dir/model.ckpt-699"
+all_model_checkpoint_paths: "/home/jarvis/documents/MLearning/DeepLearning/TensorBoard/log_dir/model.ckpt-799"
+all_model_checkpoint_paths: "/home/jarvis/documents/MLearning/DeepLearning/TensorBoard/log_dir/model.ckpt-899"
+all_model_checkpoint_paths: "/home/jarvis/documents/MLearning/DeepLearning/TensorBoard/log_dir/model.ckpt-999"

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Visualization of the training accurancy.
+Visualization of the training accuracy.
 
 @author: Jarvis ZHANG
 @date: 2017/7/30
@@ -40,5 +40,5 @@ plt.xlabel("迭代次数")
 plt.ylabel("验证精度")
 plt.xlim([0, 20000])
 plt.ylim([0.95, 1.0])
-plt.legend(["Validation accurancy", "Test accurancy"])
+plt.legend(["Validation accuracy", "Test accuracy"])
 plt.show()

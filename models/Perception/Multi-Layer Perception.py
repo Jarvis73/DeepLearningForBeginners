@@ -51,9 +51,9 @@ cross_entropy = tf.reduce_mean(-tf.reduce_sum(
 # Optimizer
 step_train = tf.train.AdagradOptimizer(LEARNING_RATE).minimize(cross_entropy)
 
-# Accurancy
+# accuracy
 bool_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_label, 1))
-accurancy = tf.reduce_mean(tf.cast(bool_prediction, tf.float32))
+accuracy = tf.reduce_mean(tf.cast(bool_prediction, tf.float32))
 
 """ Begin to train the networks """
 
@@ -75,12 +75,12 @@ for i in range(TRAINING_STEPS):
 
     # Testing
     if i % TEST_STEP == 0:
-        accu = accurancy.eval({
+        accu = accuracy.eval({
             x: mnist.test.images, 
             y_label: mnist.test.labels,
             dropout: 1.0
         })
-        print("Step: {:0>5}  Test accurancy: {:.4f}".format(i, accu))
-        f.write("Step: {:0>5}  Test accurancy: {:.4f}\n".format(i, accu))
+        print("Step: {:0>5}  Test accuracy: {:.4f}".format(i, accu))
+        f.write("Step: {:0>5}  Test accuracy: {:.4f}\n".format(i, accu))
 
 f.close()
