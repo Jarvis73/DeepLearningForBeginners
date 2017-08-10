@@ -2,22 +2,106 @@
 # -*- coding: utf-8 -*-
 
 """
-Image deformation using moving least squares
+Image deformation using moving least squares.
+For more details please reference the documentation: 
+    
+    DeepLearning/models/U-Net/util/doc/Image Deformation.pdf
+
+or the original paper: 
+    
+    S Schaefer. T Mcphail. J Warren. 
+    Image deformation using moving least squares
+
+Note:
+    In the original paper, the author missed the weight w_j in formular (5).
+    In addition, all the formulars in section 2.1 miss the w_j. 
+    And I have corrected this point in my documentation.
 
 @author: Jarvis ZHANG
 @date: 2017/8/8
 @editor: VS Code
 """
 
-import os
-import sys
 import numpy as np
-import matplotlib.pyplot as plt
 
-def show_example():
-    img = plt.imread(os.path.join(sys.path[0], "mr_big_dst.jpg"))
-    plt.imshow(img)
-    plt.show()
+def mls_affine_deformation_inv(image, p, q, alpha=1.0, density=1.0):
+    ''' Affine inverse deformation
+    ### Params:
+        * image - ndarray: original image
+        * p - ndarray: an array with size [n, 2], original control points
+        * q - ndarray: an array with size [n, 2], final control points
+        * alpha - float: parameter used by weights
+        * density - float: density of the grids
+    ### Return:
+        A deformed image.
+    '''
+    height = image.shape[0]
+    width = image.shape[1]
+    q = q[:, [1, 0]]
+    p = p[:, [1, 0]]
+
+    # Make grids on the original image
+    gridX = np.linspace(0, width, num=int(width*density), endpoint=False)
+    gridY = np.linspace(0, height, num=int(height*density), endpoint=False)
+    vy, vx = np.meshgrid(gridX, gridY)
+    grow = vx.shape[0]  # grid rows
+    gcol = vx.shape[1]  # grid cols
+    ctrls = p.shape[0]  # control points
+
+    # Precompute
+    reshaped_p = p.reshape(ctrls, 2, 1, 1)                              # [ctrls, 2, 1, 1]
+    reshaped_q = q.reshape((ctrls, 2, 1, 1))                            # [ctrls, 2, 1, 1]
+    reshaped_v = np.vstack((vx.reshape(1, grow, gcol), vy.reshape(1, grow, gcol)))      # [2, grow, gcol]
+    
+    np.seterr(divide='ignore')
+    w = 1.0 / np.sum((reshaped_p - reshaped_v) ** 2, axis=1)**alpha     # [ctrls, grow, gcol]
+    w[w == np.inf] = 2**31 - 1
+    pstar = np.sum(w * reshaped_p.transpose(1, 0, 2, 3), axis=1) / np.sum(w, axis=0)    # [2, grow, gcol]
+    phat = reshaped_p - pstar                                           # [ctrls, 2, grow, gcol]
+    qstar = np.sum(w * reshaped_q.transpose(1, 0, 2, 3), axis=1) / np.sum(w, axis=0)    # [2, grow, gcol]
+    qhat = reshaped_q - qstar                                           # [ctrls, 2, grow, gcol]
+
+    reshaped_phat = phat.reshape(ctrls, 2, 1, grow, gcol)              # [ctrls, 2, 1, grow, gcol]
+    reshaped_phat2 = phat.reshape(ctrls, 1, 2, grow, gcol)             # [ctrls, 2, 1, grow, gcol]
+    reshaped_qhat = qhat.reshape(ctrls, 1, 2, grow, gcol)              # [ctrls, 1, 2, grow, gcol]
+    reshaped_w = w.reshape(ctrls, 1, 1, grow, gcol)                     # [ctrls, 1, 1, grow, gcol]
+    pTwq = np.sum(reshaped_phat * reshaped_w * reshaped_qhat, axis=0) # [2, 2, grow, gcol]
+    try:
+        inv_pTwq = np.linalg.inv(pTwq.transpose(2, 3, 0, 1))            # [grow, gcol, 2, 2]
+        flag = False
+    except np.linalg.linalg.LinAlgError:
+        flag = True
+        det = np.linalg.det(pTwq.transpose(2, 3, 0, 1))                 # [grow, gcol]
+        det[det < 1e-8] = np.inf
+        reshaped_det = det.reshape(1, 1, grow, gcol)                    # [1, 1, grow, gcol]
+        adjoint = pTwq[[[1, 0], [1, 0]], [[1, 1], [0, 0]], :, :]        # [2, 2, grow, gcol]
+        adjoint[[0, 1], [1, 0], :, :] = -adjoint[[0, 1], [1, 0], :, :]  # [2, 2, grow, gcol]
+        inv_pTwq = (adjoint / reshaped_det).transpose(2, 3, 0, 1)       # [grow, gcol, 2, 2]
+    mul_left = reshaped_v - qstar                                       # [2, grow, gcol]
+    reshaped_mul_left = mul_left.reshape(1, 2, grow, gcol).transpose(2, 3, 0, 1)    # [grow, gcol, 1, 2]
+    mul_right = np.sum(reshaped_phat * reshaped_w * reshaped_phat2, axis=0)     # [2, 2, grow, gcol]
+    reshaped_mul_right =mul_right.transpose(2, 3, 0, 1)                 # [grow, gcol, 2, 2]
+    temp = np.matmul(np.matmul(reshaped_mul_left, inv_pTwq), reshaped_mul_right)   # [grow, gcol, 1, 2]
+    reshaped_temp = temp.reshape(grow, gcol, 2).transpose(2, 0, 1)      # [2, grow, gcol]
+
+    # Get final image transfomer -- 3-D array
+    transformers = reshaped_temp + pstar                                # [2, grow, gcol]
+
+    # Correct the points where pTwp is singular
+    if flag:
+        blidx = det == np.inf    # bool index
+        transformers[0][blidx] = vx[blidx] + qstar[0][blidx] - pstar[0][blidx]
+        transformers[1][blidx] = vy[blidx] + qstar[1][blidx] - pstar[1][blidx]
+
+    # Removed the points outside the border
+    transformers[transformers < 0] = 0
+    transformers[0][transformers[0] > height - 1] = 0
+    transformers[1][transformers[1] > width - 1] = 0
+
+    # Mapping original image
+    transformed_image = image[tuple(transformers.astype(np.int16))]    # [grow, gcol]
+
+    return transformed_image
 
 def mls_affine_deformation(image, p, q, alpha=1.0, density=1.0):
     ''' Affine deformation
@@ -100,8 +184,10 @@ def mls_affine_deformation(image, p, q, alpha=1.0, density=1.0):
 
     return transformed_image
 
-
 def mls_affine_deformation_1pt(p, q, v, alpha=1):
+    ''' Calculate the affine deformation of one point.   
+    This function is used to test the algorithm.
+    '''
     ctrls = p.shape[0]
     np.seterr(divide='ignore')
     w = 1.0 / np.sum((p - v) ** 2, axis=1) ** alpha
@@ -128,18 +214,3 @@ def mls_affine_deformation_1pt(p, q, v, alpha=1):
     return new_v
 
 
-image = plt.imread(os.path.join(sys.path[0], "mr_big_ori.jpg"))
-plt.figure()
-plt.imshow(image)
-p = np.array([
-    [30, 155], [125, 155], [225, 155],
-    [100, 235], [160, 235], [85, 295], [180, 293]
-])
-q = np.array([
-    [42, 211], [125, 155], [255, 60],
-    [80, 235], [132, 235], [85, 295], [180, 295]
-])
-transformed_image = mls_affine_deformation(image, p, q, alpha=1, density=0.5)
-plt.figure()
-plt.imshow(transformed_image)
-plt.show()
