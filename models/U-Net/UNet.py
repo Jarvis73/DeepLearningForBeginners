@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-U-Net implementation
+UNet implementation
 
 @author: Jarvis ZHANG
 @date: 2017/8/2
@@ -11,4 +11,6 @@ U-Net implementation
 """
 import os
 import sys
+import tensorflow as tf
+
 
