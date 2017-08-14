@@ -51,17 +51,17 @@ def affine_demo():
     plt.subplot(236)
     plt.imshow(transformed_image)
     plt.title("逆仿射变换 -- 采样密度 0.7")
-    plt.xlim((0, image.shape[1]))
-    plt.ylim((image.shape[0], 0))
 
     plt.show()
 
 def affine_demo2():
     p = np.array([
-        [80, 92], [97, 92], [81, 96], [89, 96], [99, 96]
+        [80, 92], [97, 92], [81, 96], [89, 96], [97.5, 95.6], [85.6, 93.9],
+        [77.9, 91.5], [83.2, 90.9], [86.8, 90.0], [93.9, 90.0]
     ])
     q = np.array([
-        [80, 92], [97, 92], [81, 96], [89, 96], [99, 96]
+        [80, 92], [97, 92], [81, 96], [89, 96], [97.5, 95.6], [85.6, 93.9],
+        [77.9, 91.5], [83.2, 90.9], [86.8, 90.0], [93.9, 90.0]
     ])
     image = plt.imread(os.path.join(sys.path[0], "monalisa_ori.jpg"))
     plt.subplot(121)
@@ -72,4 +72,4 @@ def affine_demo2():
     plt.show()
 
 
-affine_demo2()
+affine_demo()

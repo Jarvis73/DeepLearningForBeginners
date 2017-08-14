@@ -23,6 +23,7 @@ Note:
 """
 
 import numpy as np
+from skimage.transform import rescale
 
 def mls_affine_deformation_inv(image, p, q, alpha=1.0, density=1.0):
     ''' Affine inverse deformation
@@ -37,6 +38,7 @@ def mls_affine_deformation_inv(image, p, q, alpha=1.0, density=1.0):
     '''
     height = image.shape[0]
     width = image.shape[1]
+    # Change (x, y) to (row, col)
     q = q[:, [1, 0]]
     p = p[:, [1, 0]]
 
@@ -48,7 +50,7 @@ def mls_affine_deformation_inv(image, p, q, alpha=1.0, density=1.0):
     gcol = vx.shape[1]  # grid cols
     ctrls = p.shape[0]  # control points
 
-    # Precompute
+    # Compute
     reshaped_p = p.reshape(ctrls, 2, 1, 1)                              # [ctrls, 2, 1, 1]
     reshaped_q = q.reshape((ctrls, 2, 1, 1))                            # [ctrls, 2, 1, 1]
     reshaped_v = np.vstack((vx.reshape(1, grow, gcol), vy.reshape(1, grow, gcol)))      # [2, grow, gcol]
@@ -101,6 +103,9 @@ def mls_affine_deformation_inv(image, p, q, alpha=1.0, density=1.0):
     # Mapping original image
     transformed_image = image[tuple(transformers.astype(np.int16))]    # [grow, gcol]
 
+    # Rescale image
+    transformed_image = rescale(transformed_image, scale=1.0 / density)
+
     return transformed_image
 
 def mls_affine_deformation(image, p, q, alpha=1.0, density=1.0):
@@ -116,6 +121,7 @@ def mls_affine_deformation(image, p, q, alpha=1.0, density=1.0):
     '''
     height = image.shape[0]
     width = image.shape[1]
+    # Change (x, y) to (row, col)
     q = q[:, [1, 0]]
     p = p[:, [1, 0]]
 

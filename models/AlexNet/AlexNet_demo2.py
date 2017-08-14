@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-AlexNet evaluation with out lrn layers
+AlexNet evaluation without lrn layers
 
 @author: Jarvis ZHANG
 @date: 2017/8/2

@@ -1,12 +1,11 @@
-import numpy as np
-INF = 2**31-1
+import tensorflow as tf
 
-image = np.arange(4).reshape((1, 2, 2))
-image2 = np.arange(4).reshape((1, 2, 2)) * 2
-gridX = np.linspace(0, 3, num=3, endpoint=False)
-gridY = np.linspace(0, 4, num=4, endpoint=False)
-vy, vx = np.meshgrid(gridX, gridY)
-vx = vx.reshape((1, 4, 3))
-vy = vy.reshape((1, 4, 3))
+x1 = tf.constant(1.0, shape=[1,3,3,1])
+kernel = tf.constant(1.0, shape=[3,3,3,1])
+x2 = tf.constant(1.0, shape=[1,6,6,3])  
+x3 = tf.constant(1.0, shape=[1,5,5,3])
+y2 = tf.nn.conv2d(x3, kernel, strides=[1,2,2,1], padding="SAME")
+sess = tf.Session()
 
-print(np.vstack((vx, vy)))
+print(sess.run(y2))
+
