@@ -36,17 +36,6 @@ from skimage.transform import rescale
 
 np.seterr(divide='ignore', invalid='ignore')
 
-def bilinear_interpolation(image, transformers, grow, gcol, density):
-    # transformed_image = np.ones_like(image) * 255
-    # new_gridY, new_gridX = np.meshgrid((np.arange(gcol) / density).astype(np.int16), 
-    #                                     (np.arange(grow) / density).astype(np.int16))
-    # transformed_image[tuple(transformers.astype(np.int16))] = image[new_gridX, new_gridY]    # [grow, gcol]
-    
-    return 
-
-
-
-
 def mls_affine_deformation_1pt(p, q, v, alpha=1):
     ''' Calculate the affine deformation of one point.   
     This function is used to test the algorithm.
@@ -419,7 +408,7 @@ def mls_similarity_deformation_inv(image, p, q, alpha=1.0, density=1.0):
     return transformed_image
 
 
-def mls_rigid_deformation(image, p, q, alpha, density):
+def mls_rigid_deformation(image, p, q, alpha=1.0, density=1.0):
     ''' Rigid deformation
     ### Params:
         * image - ndarray: original image
@@ -494,7 +483,7 @@ def mls_rigid_deformation(image, p, q, alpha, density):
     
     return transformed_image
 
-def mls_rigid_deformation_inv(image, p, q, alpha, density):
+def mls_rigid_deformation_inv(image, p, q, alpha=1.0, density=1.0):
     ''' Rigid inverse deformation
     ### Params:
         * image - ndarray: original image

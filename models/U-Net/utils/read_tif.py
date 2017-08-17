@@ -6,7 +6,6 @@ Load tif data and save it into a *.npz file
 
 @author: Jarvis ZHANG
 @date: 2017/8/7
-@framework: Tensorflow
 @editor: VS Code
 """
 
@@ -16,6 +15,7 @@ import numpy as np
 from libtiff import TIFF
 
 IMG_SIZE = 512
+PAD_SIZE = 30   # 572 = 512 + 30 + 30
 IMG_SLICES = 30
 
 linux_data_dir = "/home/jarvis/DataSet/ISBI Challenge"
@@ -37,11 +37,11 @@ def _read_data(path):
     ### Return:
         * dataset - ndarray: images or labels
     '''
-    container = np.empty((IMG_SLICES, IMG_SIZE, IMG_SIZE))
+    container = np.empty((IMG_SLICES, IMG_SIZE + PAD_SIZE * 2, IMG_SIZE + PAD_SIZE * 2))
     # load data
     tif = TIFF.open(path)
     for i, image in enumerate(tif.iter_images()):
-        container[i] = image
+        container[i] = np.pad(image, pad_width=((PAD_SIZE,)*2,)*2, mode='symmetric')
     tif.close()
     return container
 

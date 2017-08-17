@@ -80,15 +80,15 @@ def demo2(fun):
     plt.show()
 
 
+if __name__ == "__main__":
+    #affine deformation
+    #demo(mls_affine_deformation, mls_affine_deformation_inv, "仿射")
+    #demo2(mls_affine_deformation_inv)
 
-#affine deformation
-#demo(mls_affine_deformation, mls_affine_deformation_inv, "仿射")
-#demo2(mls_affine_deformation_inv)
+    #similarity deformation
+    #demo(mls_similarity_deformation, mls_similarity_deformation_inv, "相似")
+    #demo2(mls_similarity_deformation_inv)
 
-#similarity deformation
-#demo(mls_similarity_deformation, mls_similarity_deformation_inv, "相似")
-#demo2(mls_similarity_deformation_inv)
-
-#rigid deformation
-#demo(mls_rigid_deformation, mls_rigid_deformation_inv, "刚性")
-demo2(mls_rigid_deformation_inv)
+    #rigid deformation
+    #demo(mls_rigid_deformation, mls_rigid_deformation_inv, "刚性")
+    demo2(mls_rigid_deformation_inv)

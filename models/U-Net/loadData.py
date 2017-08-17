@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-IMG_SIZE = 512
+IMG_SIZE = 572
 IMG_DEPTH = 1
 IMG_SLICES = 30
 BATCH_SIZE = 10
@@ -100,19 +100,19 @@ def read_decode(filename_queue):
             "images": tf.FixedLenFeature([], tf.string)
         })
     # Convert from a string to a vector of uint8
-    record_bytes = tf.decode_raw(features["labels"], tf.uint8)
+    label_record_bytes = tf.decode_raw(features["labels"], tf.uint8)
+    image_record_bytes = tf.decode_raw(features["images"], tf.uint8)
     # Reshape the image/label from [depth * height * width] to [depth, height, width].
-    depth_major = tf.reshape(record_bytes, [result.depth, result.height, result.width])
+    label_depth_major = tf.reshape(label_record_bytes, [result.depth, result.height, result.width])
+    image_depth_major = tf.reshape(image_record_bytes, [result.depth, result.height, result.width])
     # Convert from [depth, height, width] to [height, width, depth].
-    result.label = tf.transpose(depth_major, [1, 2, 0])
+    result.label = tf.transpose(label_depth_major, [1, 2, 0])
+    result.uint8image = tf.transpose(image_depth_major, [1, 2, 0])
 
-    record_bytes = tf.decode_raw(features["images"], tf.uint8)
-    depth_major = tf.reshape(record_bytes, [result.depth, result.height, result.width])
-    result.uint8image = tf.transpose(depth_major, [1, 2, 0])
     return result
 
 
-def distorted_data_abandon():
+def distorted_data_abandoned():
     ''' Data augmentation. Abandoned! 
         Label and image do not changed synchronously.
     '''
@@ -159,6 +159,6 @@ def distorted_data():
     read_input = read_decode(filename_queue)
     reshaped_label = tf.cast(read_input.label, tf.float32)
     reshaped_image = tf.cast(read_input.uint8image, tf.float32)
-
+    
     
 
