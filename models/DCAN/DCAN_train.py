@@ -33,6 +33,7 @@ tf.app.flags.DEFINE_boolean('log_device_placement', False,
                             """Whether to log device placement.""")
 tf.app.flags.DEFINE_integer('log_frequency', 20,
                             """How often to log results to the console.""")
+
 tf.logging.set_verbosity(tf.logging.DEBUG)
 
 def train():
@@ -92,6 +93,7 @@ def train():
                     print(format_str % (datetime.now(), self._step, loss_value,
                                         examples_per_sec, sec_per_batch))
 
+
         saver = tf.train.Saver()
         with tf.train.MonitoredTrainingSession(
                 checkpoint_dir=FLAGS.train_dir,
@@ -100,7 +102,7 @@ def train():
                        _LoggerHook()],
                 config=tf.ConfigProto(
                     log_device_placement=FLAGS.log_device_placement),
-                save_checkpoint_secs=1000) as mon_sess:
+                save_checkpoint_secs=1000, save_summaries_steps=40) as mon_sess:
             ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
 
             if ckpt:

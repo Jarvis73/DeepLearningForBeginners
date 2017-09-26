@@ -36,28 +36,26 @@ NUM_EXAMPLES_PER_EPOCH_FOR_TEST  = 80
 NUM_PREPROCESS_THREADS = 2
 
 # path
-WQU_ROOT_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\"
-WQU_TRAIN_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\train\\"
-WQU_TEST_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\test\\"
-
-TF_TRAIN_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\generate_train\\"
-
-WINDOWS_DATA_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\croped_train\\"
-LINUX_DATA_DIR = "/home/jarvis/DataSet/Warwick_QU_Dataset/croped_train/"
+WINDOWS_DATA_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset"
+LINUX_DATA_DIR = "/home/jarvis/DataSet/Warwick_QU_Dataset"
 
 if "Windows" in platform.system():
-    TF_CROPED_TRAIN_DIR = WINDOWS_DATA_DIR
+    WQU_ROOT_DIR = WINDOWS_DATA_DIR
 elif "Linux" in platform.system():
-    TF_CROPED_TRAIN_DIR = LINUX_DATA_DIR
+    WQU_ROOT_DIR = LINUX_DATA_DIR
 
+WQU_TRAIN_DIR = os.path.join(WQU_ROOT_DIR, "train")
+WQU_TEST_DIR = os.path.join(WQU_ROOT_DIR, "test")
+TF_TRAIN_DIR = os.path.join(WQU_ROOT_DIR, "generate_train")
+TF_CROPED_TRAIN_DIR = os.path.join(WQU_ROOT_DIR, "croped_train")
 
 def split_train_and_test_csv():
     """ Split the Grade.csv into two csv -- train.csv and test.csv 
     """
     df = pd.read_csv(os.path.join(WQU_ROOT_DIR, "Grade.csv"))
-    df["contour"] = [TF_CROPED_TRAIN_DIR + name + "_contour.png" for name in df["name"]]
-    df["annotation"] = [TF_CROPED_TRAIN_DIR + name + "_anno.png" for name in df["name"]]
-    df["name"] = [TF_CROPED_TRAIN_DIR + name + "_src.png" for name in df["name"]]
+    df["contour"] = [os.path.join(TF_CROPED_TRAIN_DIR, name + "_contour.png") for name in df["name"]]
+    df["annotation"] = [os.path.join(TF_CROPED_TRAIN_DIR, name + "_anno.png") for name in df["name"]]
+    df["name"] = [os.path.join(TF_CROPED_TRAIN_DIR, name + "_src.png") for name in df["name"]]
     train_info = df.iloc[80:, :]
     test_info = df.iloc[:80, :]
 
@@ -251,7 +249,7 @@ def distorted_input(eval_data, batch_size):
 
 if __name__ == '__main__':
     # Split Grades.csv into train.csv and test.csv
-    if False:
+    if True:
         split_train_and_test_csv()
 
     if False:
