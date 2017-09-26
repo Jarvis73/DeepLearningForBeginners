@@ -333,7 +333,7 @@ def _add_loss_summaries(total_loss):
 
 
 def train(total_loss, global_step):
-    """Train BBBC006 model.
+    """Train DCAN model.
     Create an optimizer and apply to all trainable variables. Add moving
     average for all trainable variables.
 

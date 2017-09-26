@@ -13,13 +13,19 @@ UNet implementation
 from datetime import datetime
 import time
 import logging
+import platform
 import tensorflow as tf
+from tensorflow import gfile
 
 import DCAN
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('train_dir', 'C:\\Logging\\DCAN\\train\\',
+if "Windows" in platform.system():
+    tf.app.flags.DEFINE_string('train_dir', 'C:\\Logging\\DCAN\\train\\',
+                           """Directory where to write event logs and checkpoint.""")
+elif "Linux" in platform.system():
+    tf.app.flags.DEFINE_string('train_dir', '/home/jarvis/Logging/DCAN/train/',
                            """Directory where to write event logs and checkpoint.""")
 tf.app.flags.DEFINE_integer('max_steps', 40000,
                             """Number of batches to run.""")
@@ -31,6 +37,9 @@ tf.logging.set_verbosity(tf.logging.DEBUG)
 
 def train():
     """Train WQU for a number of steps."""
+    if not gfile.Exists(FLAGS.train_dir):
+        gfile.MakeDirs(FLAGS.train_dir)
+
     with tf.Graph().as_default():
         ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
         global_step_init = -1

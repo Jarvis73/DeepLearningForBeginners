@@ -13,6 +13,7 @@ UNet implementation
 from datetime import datetime
 import math
 import time
+import platform
 
 import tensorflow as tf
 
@@ -20,17 +21,24 @@ import DCAN
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('eval_dir', 'C:\\Logging\\DCAN\\test\\',
+if "Windows" in platform.system():
+    tf.app.flags.DEFINE_string('eval_dir', 'C:\\Logging\\DCAN\\test\\',
                            """Directory where to write event logs.""")
+    tf.app.flags.DEFINE_string('checkpoint_dir', 'C:\\Logging\\DCAN\\train\\',
+                           """Directory where to read model checkpoints.""")
+elif "Linux" in platform.system():
+    tf.app.flags.DEFINE_string('eval_dir', '/home/jarvis/Logging/DCAN/test/',
+                           """Directory where to write event logs.""")
+    tf.app.flags.DEFINE_string('checkpoint_dir', '/home/jarvis/Logging/DCAN/train/',
+                           """Directory where to read model checkpoints.""")
+
 tf.app.flags.DEFINE_string('eval_data', 'test',
                            """Either 'test' or 'train_eval'.""")
-tf.app.flags.DEFINE_string('checkpoint_dir', 'C:\\Logging\\DCAN\\train\\',
-                           """Directory where to read model checkpoints.""")
-tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 5,
+tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 60 * 2,
                             """How often to run the eval.""")
 tf.app.flags.DEFINE_integer('num_examples', 80,
                             """Number of examples to run.""")
-tf.app.flags.DEFINE_boolean('run_once', False,
+tf.app.flags.DEFINE_boolean('run_once', True,
                             """Whether to run eval only once.""")
 
 
@@ -101,8 +109,7 @@ def evaluate():
         dice_op = DCAN.dice_op(c_fuse, s_fuse, labels)
 
         # Restore the moving average version of the learned variables for eval.
-        variable_averages = tf.train.ExponentialMovingAverage(
-            DCAN.MOVING_AVERAGE_DECAY)
+        variable_averages = tf.train.ExponentialMovingAverage(DCAN.MOVING_AVERAGE_DECAY)
         variables_to_restore = variable_averages.variables_to_restore()
         saver = tf.train.Saver(variables_to_restore)
 

@@ -47,7 +47,7 @@ LINUX_DATA_DIR = "/home/jarvis/DataSet/Warwick_QU_Dataset/croped_train/"
 
 if "Windows" in platform.system():
     TF_CROPED_TRAIN_DIR = WINDOWS_DATA_DIR
-elif if "Linux" in platform.system():
+elif "Linux" in platform.system():
     TF_CROPED_TRAIN_DIR = LINUX_DATA_DIR
 
 
