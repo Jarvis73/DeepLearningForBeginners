@@ -13,6 +13,7 @@ UNet implementation
 import os
 import cv2
 import glob
+import platform
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -40,7 +41,14 @@ WQU_TRAIN_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\train\\"
 WQU_TEST_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\test\\"
 
 TF_TRAIN_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\generate_train\\"
-TF_CROPED_TRAIN_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\croped_train\\"
+
+WINDOWS_DATA_DIR = "C:\\DataSet\\MICCAI2015\\Warwick_QU_Dataset\\croped_train\\"
+LINUX_DATA_DIR = "/home/jarvis/DataSet/Warwick_QU_Dataset/croped_train/"
+
+if "Windows" in platform.system():
+    TF_CROPED_TRAIN_DIR = WINDOWS_DATA_DIR
+elif if "Linux" in platform.system():
+    TF_CROPED_TRAIN_DIR = LINUX_DATA_DIR
 
 
 def split_train_and_test_csv():
