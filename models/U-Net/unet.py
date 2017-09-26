@@ -8,7 +8,7 @@ UNet implementation
 @date: 2017/8/15
 @framework: Tensorflow
 @editor: VS Code
-@base on: https://github.com/jakeret/tf_unet
+@based on: https://github.com/jakeret/tf_unet
 """
 
 from __future__ import print_function, division, absolute_import, unicode_literals
