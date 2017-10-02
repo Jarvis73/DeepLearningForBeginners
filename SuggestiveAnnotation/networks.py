@@ -19,13 +19,18 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer('num_layers', 12, """ Number of layers in model. """)
 tf.app.flags.DEFINE_integer('feature_root', 32, """ Feature root. """)
 tf.app.flags.DEFINE_integer('batch_size', 1, """ Number of images to process in a batch. """)
-tf.app.flags.DEFINE_integer('num_classes', 2, """ Number of output classes """)
+tf.app.flags.DEFINE_integer('num_classes', 2, """ Number of output classes. """)
+tf.app.flags.DEFINE_float('weight_decay', 1e-4, """ Weight decay for L2 loss. """)
+tf.app.flags.DEFINE_float('init_lr', 0.01, """ Initial learning rate. """)
+tf.app.flags.DEFINE_float('decay_rate', 0.1, """ Final learning rate. """)
+tf.app.flags.DEFINE_integer('epoches', 100, """ Training epochs. """)
 
 
 # File path or constant parameters
 IMAGE_HEIGHT = 0
 IMAGE_WIDTH = 0
-
+NUM_EPOCHES_PER_DECAY = 30
+NUM_EXAMPLES_PER_EPOCH = 1000
 
 
 def inference(images, train=True):
@@ -59,17 +64,17 @@ def inference(images, train=True):
                 layer_out = helpers.bn_relu(conv, training, name=scope.name)
         else: # bottleneck
             with tf.variable_scope('conv{}_bot'.format(layer)) as scope:
-                conv1x1 = tf.layers.conv2d(layer_in, feature_out, (1, 1), padding='same', name=scope.name + 'conv1x1_NC')
-                bn_relu_1 = helpers.bn_relu(conv1x1, training, name=scope.name)
-                conv3x3 = tf.layers.conv2d(bn_relu_1, feature_out, (3, 3), padding='same', name=scope.name + 'conv3x3_NC')
-                bn_relu_2 = helpers.bn_relu(conv3x3, training, name=scope.name)
-                conv1x1 = tf.layers.conv2d(bn_relu_2, feature_out * 4, (1, 1), padding='same', name=scope.name + 'conv1x1_4NC')
+                bn_relu = helpers.bn_relu(layer_in, training, name=scope.name)
+                output_1 = tf.layers.conv2d(bn_relu, feature_out, (1, 1), padding='same', name=scope.name + 'conv1x1_NC')
+                output_1 = helpers.bn_relu(output_1, training, name=scope.name)
+                output_1 = tf.layers.conv2d(output_1, feature_out, (3, 3), padding='same', name=scope.name + 'conv3x3_NC')
+                output_1 = helpers.bn_relu(output_1, training, name=scope.name)
+                output_1 = tf.layers.conv2d(output_1, feature_out * 4, (1, 1), padding='same', name=scope.name + 'conv1x1_4NC')
 
             with tf.variable_scope('conv{}_sct'.format(laber)) as scope:
-                shortcut = tf.layers.conv2d(layer_in, feature_out * 4, (1, 1), padding='same', name=scope.name + 'conv1x1_4NC_sc')
+                output_2 = tf.layers.conv2d(bn_relu, feature_out * 4, (1, 1), padding='same', name=scope.name + 'conv1x1_4NC_sc')
                 
-            layer_out = tf.add(conv1x1, shortcut)
-            layer_out = helpers.bn_relu(conv1x1, training, name=scope.name)
+            layer_out = tf.add(output_1, output_2)
         
         helpers.activation_summary(layer_out)
         layer_in = layer_out
@@ -92,7 +97,7 @@ def inference(images, train=True):
     # output
     descriptor = tf.reduce_mean(layer_in, axis=[1, 2])
     
-    outputs = tf.concat(bridges, 3)
+    outputs = tf.concat(bridges, axia=3)
     with tf.variable_scope('output_3x3') as scope:
         output_3x3 = tf.layers.conv2d(outputs, FLAGS.num_classes, (3, 3), padding='same', name=scope.name)
     with tf.variable_scope('output_1x1') as scope:
@@ -101,22 +106,30 @@ def inference(images, train=True):
     return logits, descriptor
     
 
-def dice_coef(logits, labels, epsilon=100):
-    logits_bin = tf.cast(tf.equal(logits, 1), tf.float32)
-    labels_bin = tf.cast(tf.equal(labels, 1), tf.float32)
-    intersection = tf.reduce_sum(tf.multiply(logits_bin, labels_bin))
-    union = tf.reduce_sum(logits_bin) + tf.reduce_sum(labels_bin)
-    return (2.0 * intersection + 100) / (union + 100)
+def dice_coef(logits, labels, epsilon=1e-5):
+    """ Compute dice coefficient
+    """
+    prediction = tf.nn.softmax(logits, dim=3, name='softmax')
+    intersection = tf.reduce_sum(prediction * labels)
+    union = tf.reduce_sum(prediction) + tf.reduce_sum(labels)
+    return (2.0 * intersection + epsilon) / (union + epsilon)
 
 
 def loss(logits, labels):
-    return 1 - dice_coef(logits, labels)
+    """ Combine the dice coefficient with L2 loss
+    """
+    dice_loss = 1 - dice_coef(logits, labels)
+    # Add L2-loss to the total loss
+    l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables()])
+    return dice_loss + l2_loss * FLAGS.weight_decay
+
 
 
 def train(loss, global_step):
     """ Train the FCN model
 
     """
-
+    decay_steps = NUM_EPOCHES_PER_DECAY * NUM_EXAMPLES_PER_EPOCH
+    lr = tf.train.exponential_decay(FLAGS.init_lr, global_step, decay_steps, FLAGS.decay_rate, staircase=True)
     
 

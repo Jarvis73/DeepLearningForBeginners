@@ -89,5 +89,9 @@ def conv2d_transpose(inputs, w, b, stride, output_shape, scope):
     return deconv
 
 
-
+def pixel_wise_softmax(output_map):
+    exponential_map = tf.exp(output_map)
+    sum_exp = tf.reduce_sum(exponential_map, 3, keep_dims=True)
+    tensor_sum_exp = tf.tile(sum_exp, tf.stack([1, 1, 1, tf.shape(output_map)[3]]))
+    return tf.div(exponential_map,tensor_sum_exp)
 
