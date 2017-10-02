@@ -307,7 +307,7 @@ def loss(c_fuse, s_fuse, labels):
 
 
 def _add_loss_summaries(total_loss):
-    """Add summaries for losses in BBBC006 model.
+    """Add summaries for losses in DCAN model.
     Generates moving average for all losses and associated summaries for
     visualizing the performance of the network.
 
