@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-UNet implementation
+Suggestive annotation implementation
 
 @author: Jarvis ZHANG
 @date: 2017/10/1
@@ -24,6 +24,11 @@ tf.app.flags.DEFINE_float('weight_decay', 1e-4, """ Weight decay for L2 loss. ""
 tf.app.flags.DEFINE_float('init_lr', 0.01, """ Initial learning rate. """)
 tf.app.flags.DEFINE_float('decay_rate', 0.1, """ Final learning rate. """)
 tf.app.flags.DEFINE_integer('epoches', 100, """ Training epochs. """)
+tf.app.flags.DEFINE_integer('log_frequency', 20, """ Logging frequency. """)
+tf.app.flags.DEFINE_string('log_dir', "C:\\Logging\\SA\\train", """ Logging directory for training. """)
+tf.app.flags.DEFINE_boolean('log_device_placement', False,
+                            """Whether to log device placement.""")
+
 
 
 # File path or constant parameters
@@ -112,24 +117,100 @@ def dice_coef(logits, labels, epsilon=1e-5):
     prediction = tf.nn.softmax(logits, dim=3, name='softmax')
     intersection = tf.reduce_sum(prediction * labels)
     union = tf.reduce_sum(prediction) + tf.reduce_sum(labels)
-    return (2.0 * intersection + epsilon) / (union + epsilon)
+    return tf.reduce_mean((2.0 * intersection + epsilon) / (union + epsilon))
 
 
 def loss(logits, labels):
     """ Combine the dice coefficient with L2 loss
     """
     dice_loss = 1 - dice_coef(logits, labels)
+    tf.summary.scalar('dice_loss', dice_loss)
     # Add L2-loss to the total loss
     l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables()])
-    return dice_loss + l2_loss * FLAGS.weight_decay
+
+    total_loss = dice_loss + l2_loss * FLAGS.weight_decay
+    tf.summary.scalar('total_loss', total_loss)
+    return total_loss
 
 
 
-def train(loss, global_step):
+def train(loss):
     """ Train the FCN model
 
     """
-    decay_steps = NUM_EPOCHES_PER_DECAY * NUM_EXAMPLES_PER_EPOCH
-    lr = tf.train.exponential_decay(FLAGS.init_lr, global_step, decay_steps, FLAGS.decay_rate, staircase=True)
-    
+    global_step_init = -1
+    global_step = tf.contrib.framework.get_or_create_global_step()
 
+    decay_steps = NUM_EPOCHES_PER_DECAY * NUM_EXAMPLES_PER_EPOCH
+    lr = tf.train.exponential_decay(FLAGS.init_lr, 
+                                    global_step, 
+                                    decay_steps, 
+                                    FLAGS.decay_rate, 
+                                    staircase=True)
+    tf.summary.scalar('learning_rate', lr)
+
+    # Add histograms for trainable variables
+    for var in tf.trainable_variables():
+        tf.summary.histogram(var.op.name, var)
+
+    optimizer = tf.train.MomentumOptimizer(lr, 0.9)
+
+    # Add control dependencies of batch normalization
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        train_op = optimizer.minimize(loss, global_step)
+
+    if not tf.gfile.Exists(FLAGS.log_dir):
+        tf.gfile.MakeDirs(FLAGS.log_dir)
+
+    ckpt = tf.train.get_checkpoint_state(FLAGS.log_dir)
+    if ckpt and ckpt.model_checkpoint_path:
+        # Restores from checkpoint
+        global_step_init = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+    
+    class _LoggerHook(tf.train.SessionRunHook):
+        """Logs loss and runtime."""
+
+        def begin(self):
+            self._step = global_step_init
+            self._start_time = time.time()
+        
+        def before_run(self, run_context):
+            self._step += 1
+            return tf.train.SessionRunArgs(loss)  # Asks for loss value.
+        
+        def after_run(self, run_context, run_values):
+            if self._step % FLAGS.log_frequency == 0:
+                current_time = time.time()
+                duration = current_time - self._start_time
+                self._start_time = current_time
+                loss_value = run_values.results
+                examples_per_sec = FLAGS.log_frequency * FLAGS.batch_size / duration
+                sec_per_batch = float(duration / FLAGS.log_frequency)
+                format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
+                              'sec/batch)')
+                print(format_str % (datetime.now(), self._step, loss_value,
+                                    examples_per_sec, sec_per_batch))
+        
+    saver = tf.train.Saver()
+    max_steps = int(FLAGS.epoches * NUM_EXAMPLES_PER_EPOCH / FLAGS.batch_size)
+    with tf.train.MonitoredTrainingSession(
+            checkpoint_dir=FLAGS.log_dir,
+            hooks=[tf.train.StopAtStepHook(last_step=max_steps),
+                   tf.train.NanTensorHook(loss),
+                   _LoggerHook()],
+            config=tf.ConfigProto(
+                log_device_placement=FLAGS.log_device_placement),
+            save_checkpoint_secs=1000, save_summaries_steps=40) as mon_sess:
+        
+        ckpt = tf.train.get_checkpoint_state(FLAGS.log_dir)
+
+        if ckpt:
+            saver.restore(mon_sess, ckpt.model_checkpoint_path)
+            logging.info("Model restored from file: %s" % ckpt.model_checkpoint_path)
+        while not mon_sess.should_stop():
+            mon_sess.run(train_op)
+
+    
+def main():
+    

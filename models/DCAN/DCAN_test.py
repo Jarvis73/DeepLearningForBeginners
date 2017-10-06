@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-UNet implementation
+DCAN test procedure
 
 @author: Jarvis ZHANG
 @date: 2017/9/5

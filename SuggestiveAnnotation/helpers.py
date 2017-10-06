@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-UNet implementation
+Helper functions for suggestive annotation
 
 @author: Jarvis ZHANG
 @date: 2017/10/1

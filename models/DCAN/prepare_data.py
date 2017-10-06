@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-UNet implementation
+Processing WQU data and provide train/test data
 
 @author: Jarvis ZHANG
 @date: 2017/9/2
