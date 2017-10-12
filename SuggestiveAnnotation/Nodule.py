@@ -11,7 +11,7 @@ Nodule and non-nodule classses
 """
 
 import numpy as np
-from prettytable import PrettyTable
+from prettytable import PrettyTable     # download the source code and install with python setup.py
 
 feature_names = ["subtlety",
                  "internalStructure", 
@@ -25,8 +25,13 @@ feature_names = ["subtlety",
 
 
 class ROI(object):
-    def __init__(self, label):
-        self.imageZposition = float(label.imageZposition.text)
+    def __init__(self, label, origin, spacing):
+        if origin is None:
+            origin = [0.0, 0.0, 0.0]
+        if spacing is None:
+            spacing = [1.0, 1.0, 1.0]
+
+        self.imageZposition = int((float(label.imageZposition.text) - origin[-1]) / spacing[-1])
         self.imageSOP_UID = label.imageSOP_UID.text
         self.inclusion = bool(label.inclusion.text)
         self.edgeMap = []
@@ -36,15 +41,54 @@ class ROI(object):
             x, y = int(edgeMap.xCoord.text), int(edgeMap.yCoord.text)
             self.edgeMap.append((x, y))
 
-        if len(self.edgeMap) > 1:
+        self.length = len(self.edgeMap)
+
+        if self.length > 1:
             self.isSeg = True
         else:
             self.isSeg = False
 
 
 
+    def __str__(self):
+        fmt_str = ""
+        fmt_str += "imageZposition: %d\n" % self.imageZposition
+        fmt_str += "imageSOP_UID: %s\n" % self.imageSOP_UID
+        fmt_str += "inclusion: %r\n" % self.inclusion
+        fmt_str += "edgeMap: \n"
+        for i in range(self.length):
+            fmt_str += "(%d, %d)\n" % (self.edgeMap[i][0], self.edgeMap[i][1])
+        return fmt_str
+
+
+    def __getitem__(self, item):
+        if item >= self.length:
+            raise IndexError("Out of index!")
+        return self.edgeMap[item][0], self.edgeMap[item][1], self.imageZposition
+
+
+    def __eq__(self, other):
+        if self.imageZposition != other.imageZposition:
+            return False
+        if self.length != other.length:
+            return False
+        for point in self.edgeMap:
+            if not point in other.edgeMap:
+                return False
+        return True
+
+
 class Nodule(object):
-    def __init__(self, obj):
+    def __init__(self, obj=None, **kwargs):
+        if obj is not None:
+            origin = kwargs.get("origin", None)
+            spacing = kwargs.get("spacing", None)
+            self._create_from_lidc(obj, origin, spacing)
+        else:
+            self._create_from_empty()
+
+
+    def _create_from_lidc(self, obj, origin, spacing):
         self.id = obj.noduleID.text
         self.characteristics = self.check_feature(obj)
         self.roi = []           # list of annotated layers
@@ -52,12 +96,23 @@ class Nodule(object):
         
         rois = obj.find_all("roi")
         for roi_label in rois:
-            one_roi = ROI(roi_label)
+            one_roi = ROI(roi_label, origin, spacing)
             if one_roi.isSeg:
                 self.roi.append(one_roi)
             else:
                 self.single_anno.append(one_roi)
 
+        self.length = len(self.roi)
+        self._get_center()
+
+
+    def _create_from_empty(self):
+        self.id = None
+        self.characteristics = False
+        self.feature_collection = None
+        self.roi = []
+        self.single_anno = []
+        self.length = 0
         self._get_center()
 
 
@@ -69,32 +124,41 @@ class Nodule(object):
             pt_shape = PrettyTable()
             pt_shape._set_field_names(feature_names)
             pt_shape.add_row(self.feature_collection.values())
-            fmt_str += pt_shape.get_string()
+            fmt_str += pt_shape.get_string() + '\n'
 
-        fmt_str += "\nCenter coordinate: (%d, %d, %.2f)\n" % (self.x_center, self.y_center, self.z_center)
+        fmt_str += "Center coordinate: (%d, %d, %d)\n" % self.center
         fmt_str += "Diameter: %.2f\n" % (self.diameter)
         fmt_str += "ROI: \n"
-        pt = PrettyTable()
-        header = list(range(len(self.roi) + 1))
-        header[0] = "layer:z"
-        pt._set_field_names(header)
-        pt.add_row(["z_value"] + [one_roi.imageZposition for one_roi in self.roi])
-        pt.add_row(["inclusion"] + [one_roi.inclusion for one_roi in self.roi])
-        x_min = ["x_min"]
-        x_max = ["x_max"]
-        y_min = ["y_min"]
-        y_max = ["y_max"]
-        for one_roi in self.roi:
-            xy = list(zip(*one_roi.edgeMap))
-            x_min.append(min(xy[0]))
-            x_max.append(max(xy[0]))
-            y_min.append(min(xy[1]))
-            y_max.append(max(xy[1]))
-        pt.add_row(x_min)
-        pt.add_row(x_max)
-        pt.add_row(y_min)
-        pt.add_row(y_max)
-        return fmt_str + pt.get_string()
+        if self.length > 0:
+            pt = PrettyTable()
+            header = list(range(self.length + 1))
+            header[0] = "layer:z"
+            pt._set_field_names(header)
+            pt.add_row(["z_value"] + [one_roi.imageZposition for one_roi in self.roi])
+            pt.add_row(["inclusion"] + [one_roi.inclusion for one_roi in self.roi])
+            x_min = ["x_min"]
+            x_max = ["x_max"]
+            y_min = ["y_min"]
+            y_max = ["y_max"]
+            for one_roi in self.roi:
+                xy = list(zip(*one_roi.edgeMap))
+                x_min.append(min(xy[0]))
+                x_max.append(max(xy[0]))
+                y_min.append(min(xy[1]))
+                y_max.append(max(xy[1]))
+            pt.add_row(x_min)
+            pt.add_row(x_max)
+            pt.add_row(y_min)
+            pt.add_row(y_max)
+            fmt_str += pt.get_string() + '\n'
+
+        return fmt_str
+
+
+    def __getitem__(self, item):
+        if item >= self.length:
+            raise IndexError("Out of index!")
+        return self.roi[item]
 
 
     def _get_center(self):
@@ -113,13 +177,12 @@ class Nodule(object):
         x_diameter = x_max - x_min
         y_diameter = y_max - y_min
         self.diameter = max(x_diameter, y_diameter)
-        self.x_center = (x_max + x_min) / 2
-        self.y_center = (y_max + y_min) / 2
-        self.z_center = (z_max + z_min) / 2
+        self.center = ((x_max + x_min) // 2, (y_max + y_min) // 2, (z_max + z_min) // 2)
 
 
     def check_feature(self, obj):
         if obj.characteristics is None:
+            self.feature_collection = None
             return False
         
         features = obj.characteristics
@@ -139,10 +202,14 @@ class Nodule(object):
 
 
 class nonNodule(object):
-    def __init__(self, obj):
+    def __init__(self, obj, origin, spacing):
         self.id = obj.nonNoduleID.text
-        self.imageZposition = float(obj.imageZposition.text)
+        self.imageZposition = (float(obj.imageZposition.text) - origin[-1]) / spacing[-1]
         self.imageSOP_UID = obj.imageSOP_UID
         x, y = int(obj.locus.xCoord.text), int(obj.locus.yCoord.text)
         self.locus = (x, y)
 
+
+if __name__ == '__main__':
+    nod = Nodule()
+    print(nod.feature_collection)
