@@ -12,18 +12,17 @@ Process LIDC labels
 
 #import tensorflow as tf
 #import helpers
-import Nodule
 import os
-from glob import glob
+import Nodule
 import ntpath
+import allPath
+import SimpleITK
+from glob import glob
 from bs4 import BeautifulSoup
-
-LUNA16_RAW_SRC_DIR = "C:\\DataSet\\Luna16\\data_set"
-LIDC_XML_DIR = "C:\\DataSet\\Luna16\\LIDC-XML-only\\tcia-lidc-xml"
 
 
 def find_mhd_file(patient_id):
-    for src_path in glob(ntpath.join(LUNA16_RAW_SRC_DIR, "*.mhd")):
+    for src_path in glob(ntpath.join(allPath.LUNA16_RAW_SRC_DIR, "*.mhd")):
         if patient_id in src_path:
             return src_path
     return None
@@ -41,15 +40,19 @@ def load_lidc_xml(xml_path, threshold=None):
     if src_path is None:
         return None
 
+    itk_image = SimpleITK.ReadImage(src_path)
+    img_array = SimpleITK.GetArrayFromImage(itk_image)
+    num_z, height, width = img_array.shape        #height X width constitute the transverse plane
+    origin = numpy.array(itk_img.GetOrigin())      # x,y,z  Origin in world coordinates (mm)
+    spacing = numpy.array(itk_img.GetSpacing())    # spacing of voxels in world coor. (mm)
+
     # Find all the radiologists
     readingSessions = xml.LidcReadMessage.find_all("readingSession")
     for readingSession in readingSessions:
         # Find all nodules
         nodules = readingSession.find_all("unblindedReadNodule")
         nodules = [Nodule.Nodule(nod) for nod in nodules]
-        for nodule in nodules:
-            print(nodule)
-            return
+        
 
         # Fine all non-nodules
         nonNodules = readingSession.find_all("nonNodule")
@@ -60,12 +63,12 @@ def load_lidc_xml(xml_path, threshold=None):
 
 
 def process_lidc_segmentation(log=True):
-    if not ntpath.exists(LIDC_XML_DIR):
-        print("Fatal error:", LIDC_XML_DIR, "not found!")
+    if not ntpath.exists(allPath.LIDC_XML_DIR):
+        print("Fatal error:", allPath.LIDC_XML_DIR, "not found!")
         return
     
     file_no = 0
-    all_dirs = [d for d in glob(ntpath.join(LIDC_XML_DIR, "*")) if ntpath.isdir(d)]
+    all_dirs = [d for d in glob(ntpath.join(allPath.LIDC_XML_DIR, "*")) if ntpath.isdir(d)]
     for anno_dir in all_dirs:
         xml_paths = glob(ntpath.join(anno_dir, "*.xml"))
         for xml_path in xml_paths:
