@@ -53,7 +53,6 @@ def load_lidc_xml(xml_path, threshold=None):
         nodules = readingSession.find_all("unblindedReadNodule")
         nodules = [Nodule.Nodule(nod) for nod in nodules]
         
-
         # Fine all non-nodules
         nonNodules = readingSession.find_all("nonNodule")
         nonNodules = [Nodule.nonNodule(nonNod) for nonNod in nonNodules]
