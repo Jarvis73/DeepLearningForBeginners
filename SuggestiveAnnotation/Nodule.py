@@ -25,7 +25,16 @@ feature_names = ["subtlety",
 
 
 class ROI(object):
-    def __init__(self, label, origin, spacing):
+    def __init__(self, label=None, **kwargs):
+        if label is not None:
+            origin = kwargs.get("origin", None)
+            spacing = kwargs.get("spacing", None)
+            self._create_from_lidc(label, origin, spacing)
+        else:
+            self._create_from_empty()
+
+
+    def _create_from_lidc(self, label, origin, spacing):
         if origin is None:
             origin = [0.0, 0.0, 0.0]
         if spacing is None:
@@ -48,6 +57,14 @@ class ROI(object):
         else:
             self.isSeg = False
 
+
+    def _create_from_empty(self):
+        self.imageZposition = 0
+        self.imageSOP_UID = ""
+        self.inclusion = None
+        self.edgeMap = []
+        self.length = 0
+        self.isSeg = False
 
 
     def __str__(self):
@@ -96,7 +113,7 @@ class Nodule(object):
         
         rois = obj.find_all("roi")
         for roi_label in rois:
-            one_roi = ROI(roi_label, origin, spacing)
+            one_roi = ROI(roi_label, origin=origin, spacing=spacing)
             if one_roi.isSeg:
                 self.roi.append(one_roi)
             else:
