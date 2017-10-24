@@ -95,6 +95,10 @@ class ROI(object):
         return True
 
 
+    def __len__(self):
+        return self.length
+
+
 class Nodule(object):
     def __init__(self, obj=None, **kwargs):
         if obj is not None:
@@ -178,6 +182,10 @@ class Nodule(object):
         return self.roi[item]
 
 
+    def __len__(self):
+        return self.length
+
+
     def _get_center(self):
         x_min = y_min = z_min = 999999
         x_max = y_max = z_max = -999999
@@ -204,15 +212,15 @@ class Nodule(object):
         
         features = obj.characteristics
         self.feature_collection = {
-            feature_names[0] : int(features.subtlety.text),
-            feature_names[1] : int(features.internalStructure.text),
-            feature_names[2] : int(features.calcification.text),
-            feature_names[3] : int(features.sphericity.text),
-            feature_names[4] : int(features.margin.text),
-            feature_names[5] : int(features.lobulation.text),
-            feature_names[6] : int(features.spiculation.text),
-            feature_names[7] : int(features.texture.text),
-            feature_names[8] : int(features.malignancy.text),
+            feature_names[0] : int(features.subtlety.text) if features.subtlety is not None else -1,
+            feature_names[1] : int(features.internalStructure.text) if features.internalStructure is not None else -1,
+            feature_names[2] : int(features.calcification.text) if features.calcification is not None else -1,
+            feature_names[3] : int(features.sphericity.text) if features.sphericity is not None else -1,
+            feature_names[4] : int(features.margin.text) if features.margin is not None else -1,
+            feature_names[5] : int(features.lobulation.text) if features.lobulation is not None else -1,
+            feature_names[6] : int(features.spiculation.text) if features.spiculation is not None else -1,
+            feature_names[7] : int(features.texture.text) if features.texture is not None else -1,
+            feature_names[8] : int(features.malignancy.text) if features.malignancy is not None else -1
         }
         return True
 

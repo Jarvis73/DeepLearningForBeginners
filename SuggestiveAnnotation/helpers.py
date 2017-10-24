@@ -10,7 +10,13 @@ Helper functions for suggestive annotation
 @editor: VS Code
 """
 
+import re
 import math
+import ntpath
+import allPath
+import numpy as np
+from glob import glob
+import matplotlib.pyplot as plt
 import tensorflow as tf
 
 def activation_summary(x):
@@ -95,3 +101,37 @@ def pixel_wise_softmax(output_map):
     tensor_sum_exp = tf.tile(sum_exp, tf.stack([1, 1, 1, tf.shape(output_map)[3]]))
     return tf.div(exponential_map,tensor_sum_exp)
 
+
+def check_space_range():
+    mhdpaths = glob(ntpath.join(allPath.LUNA16_RAW_SRC_DIR, "*.mhd"))
+    pattern = re.compile(r"ElementSpacing = ([\.\d]*) (?:[\.\d]*) ([\.\d]*)")
+    
+    spacingXY = []
+    spacingZ  = []
+    for mhdpath in mhdpaths:
+        with open(mhdpath, "r") as f:
+            context = f.read()
+        result = pattern.search(context)
+        spacingXY.append(float(result.group(1)))
+        spacingZ.append(float(result.group(2)))
+
+    print("XYMax: ", max(spacingXY), "index: ", np.where(np.array(spacingXY) == max(spacingXY))[0].tolist())
+    print("XYMin: ", min(spacingXY), "index: ", np.where(np.array(spacingXY) == min(spacingXY))[0].tolist())
+    print("XYMean: ", sum(spacingXY) / len(spacingXY))
+    print("ZMax: ", max(spacingZ), "index: ", np.where(np.array(spacingZ) == max(spacingZ))[0].tolist())
+    print("ZMin: ", min(spacingZ), "index: ", np.where(np.array(spacingZ) == min(spacingZ))[0].tolist())
+    print("ZMean: ", sum(spacingZ) / len(spacingZ))
+    print("Length: ", len(spacingXY))
+    
+    plt.subplot(121)
+    plt.hist(spacingXY, 50, normed=True)
+    plt.title("Voxel spacing(x, y) distribution")
+    plt.subplot(122)
+    plt.hist(spacingZ, 50, normed=True)
+    plt.title("Voxel spacing(z) distribution")
+    plt.show()
+
+
+
+if __name__ == '__main__':
+    check_space_range()
