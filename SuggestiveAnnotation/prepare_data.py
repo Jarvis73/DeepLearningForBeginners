@@ -20,6 +20,7 @@ import Nodule
 import ntpath
 import allPath
 import pprint
+import pandas
 import SimpleITK
 from glob import glob
 from bs4 import BeautifulSoup
@@ -123,7 +124,13 @@ def merge_two_nodules(n1, n2):
     return merged
 
 
-def load_lidc_xml(xml_path, threshold=-1, screening=True, process_only_patient=None):
+def load_lidc_xml(xml_path, 
+                threshold=-1, 
+                screening=True, 
+                dump_annos=True,
+                dump_chars=False,
+                process_only_patient=None,
+                **kwargs):
     with open(xml_path, "r") as xml_file:
         markup = xml_file.read()
     xml = BeautifulSoup(markup, features="xml")
@@ -131,18 +138,18 @@ def load_lidc_xml(xml_path, threshold=-1, screening=True, process_only_patient=N
     # IDRI nodules are ignored
     if xml.LidcReadMessage is None:
         print("IDRI")
-        return False
+        return 1
 
     patient_id = xml.LidcReadMessage.ResponseHeader.SeriesInstanceUid.text
     if process_only_patient is not None and patient_id != process_only_patient:
-        print("pass")
-        return False
+        # print("pass")
+        return 1
 
     # Not included in Luna16 datasets
     src_path = find_mhd_file(patient_id)
     if src_path is None:
         print("Not Luna16")
-        return False
+        return 1
 
     # Get origin and spacing which are used to normalize z coordinate
     itk_image = SimpleITK.ReadImage(src_path)
@@ -209,27 +216,52 @@ def load_lidc_xml(xml_path, threshold=-1, screening=True, process_only_patient=N
 
     print(len(all_nodules))
 
-    n = 0
-    for nod in all_nodules:
-        write_path = ntpath.join(
-            allPath.SA_SEG_DIR, "T_%s_%d.txt" % (patient_id, n))
-        with open(write_path, "w") as f:
-            for i, roi in enumerate(nod):
-                for j in range(len(roi)):
-                    f.write(str(nod[i][j]) + '\n')
-        n += 1
+    if dump_chars:      # Dump all the characteristics
+        chars_list = kwargs.get('chars_list', None)
+        if chars_list is None:
+            print("Invalid keyword parameter: chars_list")
+            return 2
+        
+        if not isinstance(chars_list, list):
+            raise TypeError("Wrong parameter type: chars_list should be a list.")
 
-    return True
+        n = 0
+        for nod in all_nodules:
+            if nod.characteristics:
+                chars_list.append([patient_id, n] + list(nod.feature_collection.values()))
+            n += 1
 
 
-def process_lidc_segmentation(log=True, process_only_patient=None, begin_with_No=0):
+    if dump_annos:      # Dump all the annotations
+        n = 0
+        for nod in all_nodules:
+            write_path = ntpath.join(
+                allPath.SA_SEG_DIR, "T_%s_%d.txt" % (patient_id, n))
+            with open(write_path, "w") as f:
+                for i, roi in enumerate(nod):
+                    for j in range(len(roi)):
+                        f.write(str(nod[i][j]) + '\n')
+            n += 1
+
+    return 0
+
+
+def process_lidc_segmentation(log=True, 
+                            screening=True,
+                            dump_annos=True,
+                            dump_chars=False,
+                            process_only_patient=None, 
+                            begin_with_No=0):
     if not ntpath.exists(allPath.LIDC_XML_DIR):
         print("Fatal error:", allPath.LIDC_XML_DIR, "not found!")
         return
 
     file_no = 0
-    all_dirs = [d for d in glob(ntpath.join(
-        allPath.LIDC_XML_DIR, "*")) if ntpath.isdir(d)]
+    all_dirs = [d for d in glob(ntpath.join(allPath.LIDC_XML_DIR, "*")) if ntpath.isdir(d)]
+
+    if dump_chars:
+        chars_list = []
+
     for anno_dir in all_dirs:
         xml_paths = glob(ntpath.join(anno_dir, "*.xml"))
         for xml_path in xml_paths:
@@ -240,10 +272,28 @@ def process_lidc_segmentation(log=True, process_only_patient=None, begin_with_No
             if log:
                 print(file_no, ":", xml_path, ": ", end='')
 
-            if load_lidc_xml(xml_path, threshold=1, process_only_patient=process_only_patient) \
-                    and process_only_patient is not None:
+            flag = load_lidc_xml(
+                xml_path, 
+                threshold=1,
+                screening=screening,
+                dump_annos=dump_annos,
+                dump_chars=dump_chars, 
+                process_only_patient=process_only_patient,
+                chars_list=chars_list
+            )
+            if flag == 0 and process_only_patient is not None:
+                break
+            elif flag == 2:
                 return
+
             file_no += 1
+        if flag == 0 and process_only_patient is not None:
+            break
+
+    if dump_chars:
+        out_path = ntpath.join(allPath.SA_ROOT_DIR, "characteristic.csv")
+        df_chars = pandas.DataFrame(chars_list, columns=["patient_id", "nodule_id"] + Nodule.feature_names)
+        df_chars.to_csv(out_path, index=False)
 
 
 def rescale_patient_images(images_zyx, org_spacing_xyz, final_spacing):
@@ -460,9 +510,20 @@ if __name__ == '__main__':
     process_only_patient = "1.3.6.1.4.1.14519.5.2.1.6279.6001.214252223927572015414741039150"
     process_only_patient = "1.3.6.1.4.1.14519.5.2.1.6279.6001.100225287222365663678666836860"
     if False:
-        process_lidc_segmentation(process_only_patient=None, begin_with_No=607)
+        process_lidc_segmentation(screen=True, 
+                                dump_annos=True,
+                                dump_chars=False, 
+                                process_only_patient=None, 
+                                begin_with_No=607)
 
     if True:
+        process_lidc_segmentation(log=True, screening=True,
+                                dump_annos=False,
+                                dump_chars=True,
+                                process_only_patient=None,
+                                begin_with_No=0)
+
+    if False:
         spacing = 0.7
         cube_size = 64
         generate_3d_cubes(final_spacing=spacing, cube_size=cube_size, dump_img=False, process_lidc_segmentation=None)

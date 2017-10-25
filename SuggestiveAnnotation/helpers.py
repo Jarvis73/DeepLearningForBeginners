@@ -18,6 +18,7 @@ import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from bs4 import BeautifulSoup
 
 def activation_summary(x):
     """ Helper to create summaries for activations.
@@ -132,6 +133,30 @@ def check_space_range():
     plt.show()
 
 
+def find_xml(pid):
+    all_dirs = [d for d in glob(ntpath.join(allPath.LIDC_XML_DIR, "*")) if ntpath.isdir(d)]
+
+    for anno_dir in all_dirs:
+        print(anno_dir)
+        xml_paths = glob(ntpath.join(anno_dir, "*.xml"))
+        for xml_path in xml_paths:
+            with open(xml_path, "r") as xml_file:
+                markup = xml_file.read()
+            xml = BeautifulSoup(markup, features="xml")
+            if xml.LidcReadMessage is None:
+                continue
+            patient_id = xml.LidcReadMessage.ResponseHeader.SeriesInstanceUid.text
+
+            if pid in patient_id:
+                print(xml_path)
+                return
+
 
 if __name__ == '__main__':
-    check_space_range()
+    if False:
+        check_space_range()
+
+    if True:
+        pid = '268992195564407418480563388746'
+        find_xml(pid)
+
