@@ -124,7 +124,7 @@ def merge_two_nodules(n1, n2):
     return merged
 
 
-def load_lidc_xml(xml_path, 
+def load_lidc_xml(log, xml_path, 
                 threshold=-1, 
                 screening=True, 
                 dump_annos=True,
@@ -137,7 +137,8 @@ def load_lidc_xml(xml_path,
 
     # IDRI nodules are ignored
     if xml.LidcReadMessage is None:
-        print("IDRI")
+        if log:
+            print("IDRI")
         return 1
 
     patient_id = xml.LidcReadMessage.ResponseHeader.SeriesInstanceUid.text
@@ -148,7 +149,8 @@ def load_lidc_xml(xml_path,
     # Not included in Luna16 datasets
     src_path = find_mhd_file(patient_id)
     if src_path is None:
-        print("Not Luna16")
+        if log:
+            print("Not Luna16")
         return 1
 
     # Get origin and spacing which are used to normalize z coordinate
@@ -172,10 +174,12 @@ def load_lidc_xml(xml_path,
         all_nodules += nodules  # just add all the annotated nodules to all_nodules
 
         if False:   # ignore
+
             # Fine all non-nodules
             nonNodules = readingSession.find_all("nonNodule")
             nonNodules = [Nodule.nonNodule(
                 nonNod, origin=origin, spacing=spacing) for nonNod in nonNodules]
+
 
     # screening: 1. ignore single annotated point(length=0)
     #            2. merge same nodules
@@ -215,6 +219,8 @@ def load_lidc_xml(xml_path,
         all_nodules = filtered_nodules
 
     print(len(all_nodules))
+    # for nodule in all_nodules:
+    #     print(nodule)
 
     if dump_chars:      # Dump all the characteristics
         chars_list = kwargs.get('chars_list', None)
@@ -259,8 +265,8 @@ def process_lidc_segmentation(log=True,
     file_no = 0
     all_dirs = [d for d in glob(ntpath.join(allPath.LIDC_XML_DIR, "*")) if ntpath.isdir(d)]
 
-    if dump_chars:
-        chars_list = []
+    chars_list = []
+    flag = -1
 
     for anno_dir in all_dirs:
         xml_paths = glob(ntpath.join(anno_dir, "*.xml"))
@@ -273,6 +279,7 @@ def process_lidc_segmentation(log=True,
                 print(file_no, ":", xml_path, ": ", end='')
 
             flag = load_lidc_xml(
+                log,
                 xml_path, 
                 threshold=1,
                 screening=screening,
@@ -345,12 +352,11 @@ def get_cube_from_image(image_zyx, center, cube_size):
     start_z = max(center[2] - cube_size / 2, 0)
     if start_z + cube_size > image_zyx.shape[0]:
         start_z = image_zyx.shape[0] - cube_size
-    start_z = int(start_z)
-    start_y = int(start_y)
-    start_x = int(start_x)
-    res = image_zyx[start_z:start_z + cube_size,
-        start_y:start_y + cube_size, start_x:start_x + cube_size]
-    return res
+    start_z = int(round(start_z))
+    start_y = int(round(start_y))
+    start_x = int(round(start_x))
+    res = image_zyx[start_z:start_z + cube_size, start_y:start_y + cube_size, start_x:start_x + cube_size]
+    return res, (start_x, start_y, start_z)
 
 
 def normalize(image):
@@ -401,23 +407,33 @@ def z_interpolation(img, z1, z2):
     return res
 
 
-def generate_3d_cubes(final_spacing, cube_size, log=True, dump_img=False, process_lidc_segmentation=None):
+def generate_3d_cubes(final_spacing, cube_size, log=True, dump_img=False, process_only_patient=None):
     nodule_paths = glob(ntpath.join(allPath.SA_SEG_DIR, "*.txt"))
+    process_only_patient_flag = True
+
     if nodule_paths == []:
         return False
 
+    if not ntpath.exists(allPath.SA_SEG_CUBE_DIR):
+        os.mkdir(allPath.SA_SEG_CUBE_DIR)
+
+    if process_only_patient is None:
+        basepath = allPath.SA_SEG_CUBE_DIR
+    else:
+        basepath = allPath.SA_TEMP_DIR
+        if not ntpath.exists(allPath.SA_TEMP_DIR):
+            os.mkdir(allPath.SA_TEMP_DIR)
+
     last_patient_id = ''
     for i, nodule_path in enumerate(nodule_paths):
-        if not ntpath.exists(allPath.SA_SEG_CUBE_DIR):
-            os.mkdir(allPath.SA_SEG_CUBE_DIR)
 
         base_name = ntpath.basename(nodule_path)[:-4]
-        cube_path = ntpath.join(allPath.SA_SEG_CUBE_DIR, base_name)
+        cube_path = ntpath.join(basepath, base_name)
 
         patient_id = base_name[2:66]
         nodule_No = base_name[67:]
 
-        if process_lidc_segmentation is not None and process_lidc_segmentation != patient_id:
+        if process_only_patient is not None and process_only_patient != patient_id:
             continue
 
         if log:
@@ -459,11 +475,10 @@ def generate_3d_cubes(final_spacing, cube_size, log=True, dump_img=False, proces
             points = f.readlines()
         points = np.array([np.array((point.strip())[1:-1].split(', '), dtype=np.int) for point in points])
         # Calculate new coordinates
-        points = points / old_shape * new_shape
-
+        new_points = points / old_shape * new_shape
         # Calculate center of the segmentated area
-        center = (np.max(points, axis=0) + np.min(points, axis=0)) / 2
-        cube_img = get_cube_from_image(img_array, center, cube_size)
+        center = (np.max(new_points, axis=0) + np.min(new_points, axis=0)) / 2
+        cube_img, start_point = get_cube_from_image(img_array, center, cube_size)
 
         if cube_img.sum() < 5:
             print(" ***** Skipping ", center[0], center[1], center[2])
@@ -479,54 +494,69 @@ def generate_3d_cubes(final_spacing, cube_size, log=True, dump_img=False, proces
         save_cube_img(cube_path + "_o.png", cube_img, 8, 8)
 
         # Get nodule mask
-        img_mask = np.zeros_like(img_array, dtype=np.float)     # [z, y, x]
-        img_mask[np.fliplr(points.astype(np.int)).T.tolist()] = 1
+        img_mask = np.zeros(old_shape[::-1], dtype=np.float)     # [z, y, x]
+        img_mask[np.fliplr(points).T.tolist()] = 1
         # Fill holes
-        sorted_z = np.sort(np.unique(points[:,2].astype(np.int)))
+        sorted_z = np.sort(np.unique(points[:,2]))
         for i in sorted_z:
             img_mask[i] = roberts(img_mask[i])
             img_mask[i] = binary_fill_holes(img_mask[i])
             selem = disk(3)
             img_mask[i] = binary_erosion(img_mask[i], selem=selem)
-        # Interpolation along z axis
-        for i in range(len(sorted_z) - 1):
-            if sorted_z[i+1] - sorted_z[i] > 1:
-                img_mask[sorted_z[i]:sorted_z[i+1] + 1] = z_interpolation(img_mask, sorted_z[i], sorted_z[i+1])
-
+        # # Interpolation along z axis
+        # for i in range(len(sorted_z) - 1):
+        #     if sorted_z[i+1] - sorted_z[i] > 1:
+        #         img_mask[sorted_z[i]:sorted_z[i+1] + 1] = z_interpolation(img_mask, sorted_z[i], sorted_z[i+1])
+        img_mask = rescale_patient_images(img_mask, spacing, final_spacing)   # channels, height, width
+        img_mask[img_mask > 0.5] = 1
+        img_mask[img_mask < 0.5] = 0
         
-        cube_mask = get_cube_from_image(img_mask * 255, center, cube_size)
+        cube_mask, start_point = get_cube_from_image(img_mask * 255, center, cube_size)
 
         save_cube_img(cube_path + "_m.png", cube_mask, 8, 8)
 
         # Release memory
         del(img_mask)
+        del(cube_mask)
+
+        if process_only_patient is not None and \
+            last_patient_id != patient_id and \
+            not process_only_patient_flag:
+            break
+        
+        if process_only_patient is not None and \
+            last_patient_id != patient_id and \
+            process_only_patient_flag:
+            process_only_patient_flag = False
 
         last_patient_id = patient_id
     
     return True
-    
+
+
 
 if __name__ == '__main__':
     process_only_patient = "1.3.6.1.4.1.14519.5.2.1.6279.6001.214252223927572015414741039150"
     process_only_patient = "1.3.6.1.4.1.14519.5.2.1.6279.6001.100225287222365663678666836860"
+    process_only_patient = "1.3.6.1.4.1.14519.5.2.1.6279.6001.168833925301530155818375859047"
     if False:
-        process_lidc_segmentation(screen=True, 
+        process_lidc_segmentation(log=True, screening=True, 
                                 dump_annos=True,
                                 dump_chars=False, 
                                 process_only_patient=None, 
-                                begin_with_No=607)
+                                begin_with_No=0)
 
-    if True:
+    if False:
         process_lidc_segmentation(log=True, screening=True,
                                 dump_annos=False,
                                 dump_chars=True,
                                 process_only_patient=None,
                                 begin_with_No=0)
 
-    if False:
+    if True:
         spacing = 0.7
         cube_size = 64
-        generate_3d_cubes(final_spacing=spacing, cube_size=cube_size, dump_img=False, process_lidc_segmentation=None)
+        generate_3d_cubes(final_spacing=spacing, cube_size=cube_size, dump_img=False, process_only_patient=None)
 
 
 

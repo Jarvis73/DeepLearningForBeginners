@@ -16,5 +16,5 @@ SA_ROOT_DIR = "D:\\DataSet\\SA"
 SA_SEG_DIR = "D:\\DataSet\\SA\\seg_anno"
 SA_SEG_CUBE_DIR = "D:\\DataSet\\SA\\seg_cube"
 SA_IMGS_DIR = "D:\\DataSet\\SA\\imgs"
-
+SA_TEMP_DIR = "D:\\DataSet\\SA\\temp"
 

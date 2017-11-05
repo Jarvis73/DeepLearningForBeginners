@@ -40,7 +40,7 @@ class ROI(object):
         if spacing is None:
             spacing = [1.0, 1.0, 1.0]
 
-        self.imageZposition = int((float(label.imageZposition.text) - origin[-1]) / spacing[-1])
+        self.imageZposition = int(round((float(label.imageZposition.text) - origin[-1]) / spacing[-1], 0))
         self.imageSOP_UID = label.imageSOP_UID.text
         self.inclusion = bool(label.inclusion.text)
         self.edgeMap = []
@@ -229,7 +229,7 @@ class Nodule(object):
 class nonNodule(object):
     def __init__(self, obj, origin, spacing):
         self.id = obj.nonNoduleID.text
-        self.imageZposition = (float(obj.imageZposition.text) - origin[-1]) / spacing[-1]
+        self.imageZposition = round((float(obj.imageZposition.text) - origin[-1]) / spacing[-1])
         self.imageSOP_UID = obj.imageSOP_UID
         x, y = int(obj.locus.xCoord.text), int(obj.locus.yCoord.text)
         self.locus = (x, y)
