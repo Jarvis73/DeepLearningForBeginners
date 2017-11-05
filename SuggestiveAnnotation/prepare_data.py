@@ -534,6 +534,38 @@ def generate_3d_cubes(final_spacing, cube_size, log=True, dump_img=False, proces
     return True
 
 
+def random_divide_dataset():
+    """ Divide Luna16 dataset (1572) into three part:
+    * training set      (1200)
+    * validation set    (150)
+    * test set          (222)
+    """
+    train_num = 1200
+    validation_num = 150
+    test_set = 222
+    
+    cube_dir = allPath.SA_SEG_CUBE_DIR
+    all_files = glob(ntpath.join(cube_dir, "*o.png"))
+    np.random.shuffle(all_files)
+
+
+    with open(ntpath.join(allPath.SA_ROOT_DIR, "train.csv"), "w") as f:
+        f.write('original image, mask\n')
+        for one_file in all_files[:train_num]:
+            mask = one_file[:-5] + 'm.png'
+            f.write(one_file + ', ' + mask + '\n')
+    with open(ntpath.join(allPath.SA_ROOT_DIR, "validation.csv"), "w") as f:
+        f.write('original image, mask\n')
+        for one_file in all_files[train_num:train_num+validation_num]:
+            mask = one_file[:-5] + 'm.png'
+            f.write(one_file + ', ' + mask + '\n')
+    with open(ntpath.join(allPath.SA_ROOT_DIR, "test.csv"), "w") as f:
+        f.write('original image, mask\n')
+        for one_file in all_files[train_num+validation_num:]:
+            mask = one_file[:-5] + 'm.png'
+            f.write(one_file + ', ' + mask + '\n')
+    
+
 
 if __name__ == '__main__':
     process_only_patient = "1.3.6.1.4.1.14519.5.2.1.6279.6001.214252223927572015414741039150"
@@ -553,10 +585,11 @@ if __name__ == '__main__':
                                 process_only_patient=None,
                                 begin_with_No=0)
 
-    if True:
+    if False:
         spacing = 0.7
         cube_size = 64
         generate_3d_cubes(final_spacing=spacing, cube_size=cube_size, dump_img=False, process_only_patient=None)
 
-
+    if True:
+        random_divide_dataset()
 
