@@ -15,7 +15,9 @@ import logging
 import tensorflow as tf
 from datetime import datetime
 
+import data_provider
 import networks
+
 FLAGS = networks.FLAGS
 
 def train():
@@ -31,7 +33,21 @@ def train():
             global_step_init = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
 
         # Get training patch
-        
+        batch_size = FLAGS.batch_size
+        images, labels = data_provider.input(eval_data=False, batch_size=batch_size)
+
+        # Build a Graph that computes the logits predictions from the inference model.
+        logits, descripter = networks.inference(images, train=True)
+
+        # Calculate loss.
+        loss = networks.loss(logits, labels)
+
+        # Build a Graph that trains the model with one batch of examples and
+        # updates the model parameters.
+        train_op = networks.train(loss, global_step)
+
+        # Specific placeholder
+        feed_dict = {training: True}
 
         class _LoggerHook(tf.train.SessionRunHook):
             """Logs loss and runtime."""
@@ -42,7 +58,8 @@ def train():
 
             def before_run(self, run_context):
                 self._step += 1
-                return tf.train.SessionRunArgs(loss)  # Asks for loss value.
+                return tf.train.SessionRunArgs(fetches=loss, 
+                                    feed_dict=feed_dict)  # Parameters for Session.run()
             
             def after_run(self, run_context, run_values):
                 if self._step % FLAGS.log_frequency == 0:

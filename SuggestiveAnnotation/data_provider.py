@@ -9,6 +9,8 @@ DCAN training procedure
 @framework: Tensorflow
 @editor: VS Code
 """
+
+import cv2
 import ntpath
 import allPath
 import tensorflow as tf
@@ -21,8 +23,32 @@ NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 1200
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 150
 NUM_PREPROCESS_THREADS = 16
 
-def read_from_queue(path, channels, dtype=tf.uint8):
-    return tf.image.decode_png(path, channels=channels, dtype=dtype)
+def read_from_queue(src_path, row, col, size, dtype=tf.uint8):
+    """ Read 8x8 block image and return the 3D cube
+    ### Params:
+        * src_path: a string, file path
+        * channels: integer, image channels
+        * row: integer, row number of the image block
+        * col: integer, col number of the image block
+        * size: integer, size of the image block (square block)
+        * dtype: tf type
+
+    ### Returns:
+        Tensor, image cube with shape [row*col, size, size]
+    """
+    image8x8 = cv2.imread(src_path, cv2.IMREAD_GRAYSCALE)
+    res = numpy.zeros((rows * cols, size, size))
+
+    img_height = size
+    img_width = size
+
+    for row in range(rows):
+        for col in range(cols):
+            src_y = row * img_height
+            src_x = col * img_width
+            res[row * cols + col] = image8x8[src_y:src_y + img_height, src_x:src_x + img_width]
+
+    return tf.convert_to_tensor(res, dtype=dtype)
 
 
 def read_data_from_disk(all_files_queue):
@@ -95,8 +121,8 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
         * `batch_size`: Number of images per batch.
         * `shuffle`: boolean indicating whether to use a shuffling queue.
     ### Returns:
-        * `images`: Images. 4D tensor of [batch_size, height, width, depth] size.
-        * `labels`: Labels. 4D tensor of [batch_size, height, width, 2] size.
+        * `images`: Images. 5D tensor of [batch_size, thick, height, width, depth] size.
+        * `labels`: Labels. 5D tensor of [batch_size, thick, height, width, depth] size.
     """
     # Create a queue that shuffles the examples, and then
     # read 'batch_size' images + labels from the example queue.
@@ -127,8 +153,8 @@ def input(eval_data, batch_size):
         eval_data: bool, indicating if one should use the train or eval data set.
         batch_size: Number of images per batch.
     Returns:
-        images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, IMAGE_THICK, 1] size.
-        labels: Labels. 4D tensor of [batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_THICK 1] size.
+        images: Images. 4D tensor of [batch_size, IMAGE_THICK, IMAGE_SIZE, IMAGE_SIZE, IMAGE_DEPTH] size.
+        labels: Labels. 4D tensor of [batch_size, IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEPTH] size.
     """
     if not eval_data:
         num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
@@ -146,10 +172,11 @@ def input(eval_data, batch_size):
 
     # Set max intensity to 1
     int_label = tf.cast(tf.divide(label, 255), tf.int32)
+    int_label = tf.one_hot(int_label, depth=2, axis=3)
 
     # Set the shapes of tensors.
-    float_image.set_shape([IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_THICK, IMAGE_DEEPTH])
-    int_label.set_shape([IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_THICK, IMAGE_DEEPTH])
+    float_image.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEPTH])
+    int_label.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEPTH])
 
     # Ensure that the random shuffling has good mixing properties.
     min_fraction_of_examples_in_queue = 0.4
