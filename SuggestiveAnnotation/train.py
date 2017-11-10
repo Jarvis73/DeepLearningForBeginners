@@ -2,14 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-DCAN training procedure
+Suggestion Annotation training procedure
 
 @author: Jarvis ZHANG
 @date: 2017/11/5
 @framework: Tensorflow
 @editor: VS Code
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+import os
 import time
 import logging
 import tensorflow as tf
@@ -19,6 +23,7 @@ import data_provider
 import networks
 
 FLAGS = networks.FLAGS
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 def train():
     if not tf.gfile.Exists(FLAGS.log_dir):
@@ -46,9 +51,6 @@ def train():
         # updates the model parameters.
         train_op = networks.train(loss, global_step)
 
-        # Specific placeholder
-        feed_dict = {training: True}
-
         class _LoggerHook(tf.train.SessionRunHook):
             """Logs loss and runtime."""
 
@@ -58,8 +60,7 @@ def train():
 
             def before_run(self, run_context):
                 self._step += 1
-                return tf.train.SessionRunArgs(fetches=loss, 
-                                    feed_dict=feed_dict)  # Parameters for Session.run()
+                return tf.train.SessionRunArgs(fetches=loss)  # Parameters for Session.run()
             
             def after_run(self, run_context, run_values):
                 if self._step % FLAGS.log_frequency == 0:
@@ -75,7 +76,7 @@ def train():
                                         examples_per_sec, sec_per_batch))
 
         saver = tf.train.Saver()
-        max_steps = int(FLAGS.epoches * NUM_EXAMPLES_PER_EPOCH / FLAGS.batch_size)
+        max_steps = int(FLAGS.epoches * data_provider.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size)
         with tf.train.MonitoredTrainingSession(
                 checkpoint_dir=FLAGS.log_dir,
                 hooks=[tf.train.StopAtStepHook(last_step=max_steps),
@@ -96,6 +97,7 @@ def train():
     
 def main(argv=None):
     train()
+
 
 if __name__ == '__main__':
     tf.app.run()

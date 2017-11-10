@@ -9,16 +9,25 @@ Helper functions for suggestive annotation
 @framework: Tensorflow
 @editor: VS Code
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from glob import glob
+from bs4 import BeautifulSoup
+from skimage.feature import canny
+from skimage.morphology import dilation, square
+
+import os
 import re
+import cv2
 import math
-import ntpath
 import allPath
 import numpy as np
-from glob import glob
-import matplotlib.pyplot as plt
+import prepare_data
 import tensorflow as tf
-from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
+
 
 def activation_summary(x):
     """ Helper to create summaries for activations.
@@ -68,7 +77,7 @@ def get_deconv_filter_normal(shape):
         Tensor containing weight variable.
 
     """
-    return tf.get_variable(name='up_filter', initializer=tf.truncated_normal_initializer(stddev=0.1))
+    return tf.get_variable(name='up_filter', shape=shape, initializer=tf.truncated_normal_initializer(stddev=0.1))
 
 
 def bn_relu(inputs, training, name=None):
@@ -82,8 +91,8 @@ def bn_relu(inputs, training, name=None):
                     train_op = optimizer.minimize(loss)
     """
 
-    bn = tf.layers.batch_normalization(inputs, training=training, name=name + 'normalization')
-    layer_out = tf.nn.relu(bn, name=name + 'relu')
+    bn = tf.layers.batch_normalization(inputs, training=training, name=name + '/normalization')
+    layer_out = tf.nn.relu(bn, name=name + '/relu')
     return layer_out
 
 
@@ -113,7 +122,7 @@ def pixel_wise_softmax(output_map):
 
 
 def check_space_range():
-    mhdpaths = glob(ntpath.join(allPath.LUNA16_RAW_SRC_DIR, "*.mhd"))
+    mhdpaths = glob(os.path.join(allPath.LUNA16_RAW_SRC_DIR, "*.mhd"))
     pattern = re.compile(r"ElementSpacing = ([\.\d]*) (?:[\.\d]*) ([\.\d]*)")
     
     spacingXY = []
@@ -143,11 +152,11 @@ def check_space_range():
 
 
 def find_xml(pid):
-    all_dirs = [d for d in glob(ntpath.join(allPath.LIDC_XML_DIR, "*")) if ntpath.isdir(d)]
+    all_dirs = [d for d in glob(os.path.join(allPath.LIDC_XML_DIR, "*")) if os.path.isdir(d)]
 
     for anno_dir in all_dirs:
         print(anno_dir)
-        xml_paths = glob(ntpath.join(anno_dir, "*.xml"))
+        xml_paths = glob(os.path.join(anno_dir, "*.xml"))
         for xml_path in xml_paths:
             with open(xml_path, "r") as xml_file:
                 markup = xml_file.read()
@@ -159,6 +168,53 @@ def find_xml(pid):
             if pid in patient_id:
                 print(xml_path)
                 return
+
+
+def per_image_standardization(image):
+    """Linearly scales `image` to have zero mean and unit norm.
+
+    This op computes `(x - mean) / adjusted_stddev`, where `mean` is the average
+    of all values in image, and
+    `adjusted_stddev = max(stddev, 1.0/sqrt(image.NumElements()))`.
+
+    `stddev` is the standard deviation of all values in `image`. It is capped
+    away from zero to protect against division by 0 when handling uniform images.
+
+    ### Params:
+      image: 4-D tensor of shape `[thick, height, width, channels]`.
+
+    ### Returns:
+      The standardized image with same shape as `image`.
+    """
+    num_pixels = tf.reduce_prod(tf.shape(image))
+    
+    image = tf.cast(image, dtype=tf.float32)
+    image_mean = tf.reduce_mean(image)
+
+    variance = (tf.reduce_mean(tf.square(image)) - tf.square(image_mean))
+    variance = tf.nn.relu(variance)
+    stddev = tf.sqrt(variance)
+
+    min_stddev = tf.rsqrt(tf.cast(num_pixels, tf.float32))
+    pixel_value_scale = tf.maximum(stddev, min_stddev)
+    pixel_value_offset = image_mean
+
+    image = tf.subtract(image, pixel_value_offset)
+    image = tf.div(image, pixel_value_scale)
+    return image
+
+
+def show_contour(image, mask, write_path):
+    # Canny edge detection
+    contour = canny(image)
+    contour = dilation(contour, square(1)).astype(np.uint8) * 255
+    
+    # Set label red
+    image[contour > 0, 2] = 255
+    image[contour > 0, 1] = 0
+    image[contour > 0, 0] = 0
+
+    cv2.imwrite('color.png', image)
 
 
 if __name__ == '__main__':

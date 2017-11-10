@@ -17,9 +17,7 @@ import cv2
 import numpy as np
 from numpy.linalg import norm
 import Nodule
-import ntpath
 import allPath
-import pprint
 import pandas
 import SimpleITK
 from glob import glob
@@ -31,7 +29,7 @@ from scipy.ndimage import binary_fill_holes
 
 
 def find_mhd_file(patient_id):
-    for src_path in glob(ntpath.join(allPath.LUNA16_RAW_SRC_DIR, "*.mhd")):
+    for src_path in glob(os.path.join(allPath.LUNA16_RAW_SRC_DIR, "*.mhd")):
         if patient_id in src_path:
             return src_path
     return None
@@ -241,7 +239,7 @@ def load_lidc_xml(log, xml_path,
     if dump_annos:      # Dump all the annotations
         n = 0
         for nod in all_nodules:
-            write_path = ntpath.join(
+            write_path = os.path.join(
                 allPath.SA_SEG_DIR, "T_%s_%d.txt" % (patient_id, n))
             with open(write_path, "w") as f:
                 for i, roi in enumerate(nod):
@@ -258,25 +256,25 @@ def process_lidc_segmentation(log=True,
                             dump_chars=False,
                             process_only_patient=None, 
                             begin_with_No=0):
-    if not ntpath.exists(allPath.LIDC_XML_DIR):
+    if not os.path.exists(allPath.LIDC_XML_DIR):
         print("Fatal error:", allPath.LIDC_XML_DIR, "not found!")
         return
 
     file_no = 0
-    all_dirs = [d for d in glob(ntpath.join(allPath.LIDC_XML_DIR, "*")) if ntpath.isdir(d)]
+    all_dirs = [d for d in glob(os.path.join(allPath.LIDC_XML_DIR, "*")) if os.path.isdir(d)]
 
     chars_list = []
     flag = -1
 
     for anno_dir in all_dirs:
-        xml_paths = glob(ntpath.join(anno_dir, "*.xml"))
+        xml_paths = glob(os.path.join(anno_dir, "*.xml"))
         for xml_path in xml_paths:
             if file_no < begin_with_No:
                 file_no += 1
                 continue
 
             if log:
-                print(file_no, ":", xml_path, ": ", end='')
+                print(file_no, ":", xml_path, ": ")
 
             flag = load_lidc_xml(
                 log,
@@ -298,7 +296,7 @@ def process_lidc_segmentation(log=True,
             break
 
     if dump_chars:
-        out_path = ntpath.join(allPath.SA_ROOT_DIR, "characteristic.csv")
+        out_path = os.path.join(allPath.SA_ROOT_DIR, "characteristic.csv")
         df_chars = pandas.DataFrame(chars_list, columns=["patient_id", "nodule_id"] + Nodule.feature_names)
         df_chars.to_csv(out_path, index=False)
 
@@ -408,27 +406,27 @@ def z_interpolation(img, z1, z2):
 
 
 def generate_3d_cubes(final_spacing, cube_size, log=True, dump_img=False, process_only_patient=None):
-    nodule_paths = glob(ntpath.join(allPath.SA_SEG_DIR, "*.txt"))
+    nodule_paths = glob(os.path.join(allPath.SA_SEG_DIR, "*.txt"))
     process_only_patient_flag = True
 
     if nodule_paths == []:
         return False
 
-    if not ntpath.exists(allPath.SA_SEG_CUBE_DIR):
+    if not os.path.exists(allPath.SA_SEG_CUBE_DIR):
         os.mkdir(allPath.SA_SEG_CUBE_DIR)
 
     if process_only_patient is None:
         basepath = allPath.SA_SEG_CUBE_DIR
     else:
         basepath = allPath.SA_TEMP_DIR
-        if not ntpath.exists(allPath.SA_TEMP_DIR):
+        if not os.path.exists(allPath.SA_TEMP_DIR):
             os.mkdir(allPath.SA_TEMP_DIR)
 
     last_patient_id = ''
     for i, nodule_path in enumerate(nodule_paths):
 
-        base_name = ntpath.basename(nodule_path)[:-4]
-        cube_path = ntpath.join(basepath, base_name)
+        base_name = os.path.basename(nodule_path)[:-4]
+        cube_path = os.path.join(basepath, base_name)
 
         patient_id = base_name[2:66]
         nodule_No = base_name[67:]
@@ -462,13 +460,13 @@ def generate_3d_cubes(final_spacing, cube_size, log=True, dump_img=False, proces
                 if not tf.gfile.Exists(allPath.SA_IMGS_DIR):
                     tf.gfile.MkDir(allPath.SA_IMGS_DIR)
 
-                patient_dir = ntpath.join(allPath.SA_IMGS_DIR, patient_id)
+                patient_dir = os.path.join(allPath.SA_IMGS_DIR, patient_id)
                 if not tf.gfile.Exists(patient_dir):
                     tf.gfile.MkDir(patient_dir)
                     
                 for i in range(img_array.shape[0]):
                     img = img_array[i]
-                    cv2.imwrite(ntpath.join(patient_dir, str(i) + ".png"), img)
+                    cv2.imwrite(os.path.join(patient_dir, str(i) + ".png"), img)
 
 
         with open(nodule_path, "r") as f:
@@ -545,25 +543,25 @@ def random_divide_dataset():
     test_set = 222
     
     cube_dir = allPath.SA_SEG_CUBE_DIR
-    all_files = glob(ntpath.join(cube_dir, "*o.png"))
+    all_files = glob(os.path.join(cube_dir, "*o.png"))
     np.random.shuffle(all_files)
 
 
-    with open(ntpath.join(allPath.SA_ROOT_DIR, "train.csv"), "w") as f:
+    with open(os.path.join(allPath.SA_ROOT_DIR, "train.csv"), "w") as f:
         f.write('original image, mask\n')
         for one_file in all_files[:train_num]:
             mask = one_file[:-5] + 'm.png'
-            f.write(one_file + ', ' + mask + '\n')
-    with open(ntpath.join(allPath.SA_ROOT_DIR, "validation.csv"), "w") as f:
+            f.write(one_file + ',' + mask + '\n')
+    with open(os.path.join(allPath.SA_ROOT_DIR, "validation.csv"), "w") as f:
         f.write('original image, mask\n')
         for one_file in all_files[train_num:train_num+validation_num]:
             mask = one_file[:-5] + 'm.png'
-            f.write(one_file + ', ' + mask + '\n')
-    with open(ntpath.join(allPath.SA_ROOT_DIR, "test.csv"), "w") as f:
+            f.write(one_file + ',' + mask + '\n')
+    with open(os.path.join(allPath.SA_ROOT_DIR, "test.csv"), "w") as f:
         f.write('original image, mask\n')
         for one_file in all_files[train_num+validation_num:]:
             mask = one_file[:-5] + 'm.png'
-            f.write(one_file + ', ' + mask + '\n')
+            f.write(one_file + ',' + mask + '\n')
     
 
 
