@@ -14,9 +14,9 @@ from __future__ import division
 from __future__ import absolute_import
 
 import allPath
-import tensorflow as tf
 import helpers
 import data_provider
+import tensorflow as tf
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -35,8 +35,9 @@ tf.app.flags.DEFINE_string('log_dir', allPath.SA_LOG_TRAIN_DIR, """ Logging dire
 tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log device placement.""")
 tf.app.flags.DEFINE_integer('test_frequency', 1, """ Test frequency per epoch """)
 tf.app.flags.DEFINE_integer('size_per_test', 100, """ Number of examples per test """)
-tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 20, """How often to run the eval.""")
+tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 17, """How often to run the eval.""")
 tf.app.flags.DEFINE_boolean('run_once', False, """Whether to run eval only once.""")
+tf.app.flags.DEFINE_integer('num_show_image', 10, """ Number of output to save in test """)
 
 IMAGE_HEIGHT = data_provider.IMAGE_HEIGHT
 IMAGE_WIDTH = data_provider.IMAGE_WIDTH
@@ -104,8 +105,8 @@ def inference(images, train=True):
 
             helpers.activation_summary(upconv)
 
-    # output
-    descriptor = tf.reduce_mean(layer_in, axis=[1, 2, 3])
+    # # output
+    # descriptor = tf.reduce_mean(layer_in, axis=[1, 2, 3])
     
     outputs = tf.concat(bridges, axis=-1)
     with tf.variable_scope('output_x3') as scope:
@@ -113,9 +114,14 @@ def inference(images, train=True):
         output_x3 = helpers.bn_relu(output_x3, train, name=scope.name)
     with tf.variable_scope('output_x1') as scope:
         logits = tf.layers.conv3d(output_x3, FLAGS.num_classes, (1, 1, 1), padding='same', activation=tf.nn.softmax, name=scope.name)
-    
-    return logits, descriptor
-    
+
+    tf.summary.image('prediction', data_provider.flat_cube_tensor(tf.expand_dims(logits[..., 1], -1), 8, 8))
+
+    return logits
+
+
+
+
 
 def dice_coef(logits, labels, axis=[1, 2, 3, 4], loss_type='jaccard', epsilon=1e-5):
     """ Soft dice (Sørensen or Jaccard) coefficient for comparing the similarity
@@ -158,21 +164,6 @@ def loss_rvd(logits, labels, axis=[1, 2, 3, 4]):
     return rvd
 
 
-def loss_avgd(logits, labels, axis=[1,2,3,4]):
-    """ Average symmetric surface distance """
-
-
-
-def loss_rmsd(logits, labels, axis=[1,2,3,4]):
-    """ Root mean square symmetric surface distance """
-    pass
-
-
-def loss_maxd(logits, labels, axis=[1,2,3,4]):
-    """ Maximum symmetric surface distance """
-    pass
-
-
 def softmax_cross_entropy(logits, labels):
     """Calculate the loss from the logits and the labels.
     Args:
@@ -203,7 +194,7 @@ def loss(logits, labels):
     cross_entropy = softmax_cross_entropy(logits, labels)
     tf.add_to_collection('cross_entropy', cross_entropy)
 
-    total_loss = cross_entropy + l2_loss * FLAGS.weight_decay
+    total_loss = tf.add(cross_entropy, l2_loss * FLAGS.weight_decay, name='total_loss')
     return total_loss
 
 
@@ -254,7 +245,7 @@ def train(total_loss, global_step):
     tf.summary.scalar('learning_rate', lr)
 
     # Generate moving averages of all losses and associated summaries.
-    loss_averages_op = _add_loss_summaries(total_loss)
+    loss_averages_op = add_loss_summaries(total_loss)
 
     # Compute gradients.
     with tf.control_dependencies([loss_averages_op]):
@@ -279,7 +270,8 @@ def train(total_loss, global_step):
 
     # Add control dependencies of batch normalization
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    with tf.control_dependencies([update_ops, apply_gradient_op, variables_averages_op]):
+    joint_ops = tf.get_collection('MY_DEPEND')
+    with tf.control_dependencies(update_ops + joint_ops + [apply_gradient_op, variables_averages_op]):
         train_op = tf.no_op(name='train')
 
     return train_op

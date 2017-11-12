@@ -14,9 +14,11 @@ from __future__ import division
 from __future__ import absolute_import
 
 import os
+import matplotlib.pyplot as plt
 import allPath
 import tensorflow as tf
 import helpers
+import numpy as np
 
 IMAGE_HEIGHT = 64
 IMAGE_WIDTH = 64
@@ -25,6 +27,7 @@ IMAGE_DEEPTH = 1
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 1200
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 150
 NUM_PREPROCESS_THREADS = 16
+
 
 def read_from_queue(src_path, rows, cols, size, channels=1, dtype=tf.uint8):
     """ Read 8x8 block image and return the 3D cube
@@ -115,12 +118,39 @@ def get_read_input(eval_data):
     return label, image
 
 
-def _generate_image_and_label_batch(image, label, min_queue_examples,
+def flat_cube_tensor(cube_tensor, rows, cols):
+    """
+    ### Params:
+        * cub_tensor: Tensor [batch_size, thick, height, width, depth]
+        * rows: integer
+        * cols: integer
+    ### Return:
+        Tensor [batch_size, rows*height, cols*width, depth]
+    """
+    assert rows * cols == cube_tensor.get_shape()[1]
+    shape = cube_tensor.get_shape().as_list()
+    batch_size = shape[0]
+    img_h = shape[2]
+    img_w = shape[3]
+    img_d = shape[4]
+    res_img = tf.Variable(tf.constant(1.0, shape=(batch_size, img_h*rows, img_w*cols, img_d)), trainable=False)
+    for row in range(rows):
+        for col in range(cols):
+            tar_y = row * img_h
+            tar_x = col * img_w
+            joint = tf.assign(res_img[:, tar_y:tar_y+img_h, tar_x:tar_x+img_w, :], cube_tensor[:, row * cols + col, ...])
+            tf.add_to_collection('MY_DEPEND', joint)
+    
+    return res_img
+
+
+def _generate_image_and_label_batch(ori_image, std_image, label, min_queue_examples,
                                     batch_size, shuffle):
     """Construct a queued batch of images and labels.
 
     ### Args:
-        * `image`: 3-D Tensor of [height, width, depth] of type.float32.
+        * `ori_image`: 3-D Tensor of [height, width, depth] of type.float32, original image
+        * `std_image`: 3-D Tensor of [height, width, depth] of type.float32, standard image
         * `label`: 3-D Tensor of [height, width, 1] of type.int32.
         * `min_queue_examples`: int32, minimum number of samples to retain
             in the queue that provides of batches of examples.
@@ -134,23 +164,24 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
     # read 'batch_size' images + labels from the example queue.
     num_preprocess_threads = NUM_PREPROCESS_THREADS
     if shuffle:
-        images, labels = tf.train.shuffle_batch(
-            [image, label],
+        ori_images, std_images, labels = tf.train.shuffle_batch(
+            [ori_image, std_image, label],
             batch_size=batch_size,
             num_threads=num_preprocess_threads,
             capacity=min_queue_examples + 3 * batch_size,
             min_after_dequeue=min_queue_examples)
     else:
-        images, labels = tf.train.batch(
-            [image, label],
+        ori_images, std_images, labels = tf.train.batch(
+            [ori_image, std_image, label],
             batch_size=batch_size,
             num_threads=num_preprocess_threads,
             capacity=min_queue_examples + 3 * batch_size)
 
-    # # Display the training images in the visualizer.
-    # tf.summary.image('images', images)
+    # Display the training images in the visualizer.
+    tf.summary.image('images', flat_cube_tensor(ori_images, 8, 8))
+    tf.summary.image('labels', flat_cube_tensor(tf.expand_dims(labels[..., 1], -1), 8, 8))
 
-    return images, labels
+    return std_images, labels
 
 
 def input(eval_data, batch_size):
@@ -170,7 +201,7 @@ def input(eval_data, batch_size):
     label, image = get_read_input(eval_data)
 
     # # Divide the center 32x32x32
-    # ox, oy, oz = IMAGE_THICK // 2, IMAGE_HEIGHT // 2, IMAGE_WIDTH // 2 
+    # ox, oy, oz = IMAGE_THICK // 2, IMAGE_HEIGHT // 2, IMAGE_WIDTH // 2
     # image = image[ox:ox+IMAGE_THICK, oy:oy+IMAGE_HEIGHT, oz:oz+IMAGE_WIDTH]
     # label = label[ox:ox+IMAGE_THICK, oy:oy+IMAGE_HEIGHT, oz:oz+IMAGE_WIDTH]
 
@@ -180,9 +211,12 @@ def input(eval_data, batch_size):
     # Set max intensity to 1
     int_label = tf.cast(tf.divide(label, 255), tf.int32)
     int_label = tf.squeeze(int_label, axis=-1)
-    int_label = tf.one_hot(int_label, depth=2,)
+    int_label = tf.one_hot(int_label, depth=2)
 
     # Set the shapes of tensors.
+    # tf.train.batch or tf.train.shuffle_batch requires all shapes of the tensor must be fully defined
+    # image: [thick ? ? depth] --> [thick, height, width, depth]
+    image.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEPTH])
     float_image.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEPTH])
     int_label.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, 2])
 
@@ -192,7 +226,7 @@ def input(eval_data, batch_size):
 
     # Generate a batch of images and labels by building up a queue of examples.
     shuffle = False if eval_data else True
-    return _generate_image_and_label_batch(float_image, int_label,
+    return _generate_image_and_label_batch(image, float_image, int_label,
                                            min_queue_examples, batch_size,
                                            shuffle=shuffle)
 
@@ -202,11 +236,40 @@ def distorted_input(eval_data, batch_size):
 
 
 if __name__ == '__main__':
-    image, label = input(False, 1)
-    print(image)
-    print(label)
+    images, labels = input(False, 1)
+    image = flat_cube_tensor(images, 8, 8)
+    label = flat_cube_tensor(labels, 8, 8)
 
     with tf.Session() as sess:
-        image, label = sess.run([image, label])
-        print(image.shape)
-        print(label.shape)
+        sess.run(tf.global_variables_initializer())
+        coord = tf.train.Coordinator()
+        threads = []
+        flag = True
+
+        try:
+            for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                threads.extend(qr.create_threads(sess, coord=coord, daemon=True, start=True))
+
+            depend = tf.get_collection('MY_DEPEND')
+            with tf.control_dependencies(depend):
+                joint_op = tf.no_op()
+
+            while flag and not coord.should_stop():
+                # Run training steps or whatever
+                image_out, label_out, _ = sess.run([image, label, joint_op])
+                flag = False
+                
+        except Exception as e:
+            coord.request_stop(e)
+
+        coord.request_stop()
+        coord.join(threads, stop_grace_period_secs=10)
+    
+    print(np.max(image_out), np.min(image_out))
+    print(np.max(label_out), np.min(label_out))
+
+    plt.subplot(121)
+    plt.imshow(image_out[0, ..., 0], cmap='gray')
+    plt.subplot(122)
+    plt.imshow(label_out[0, ..., 1], cmap='gray')
+    plt.show()

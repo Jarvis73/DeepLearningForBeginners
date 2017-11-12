@@ -10,12 +10,19 @@ Suggestive Annotation test procedure
 @editor: VS Code
 """
 
-import tensorflow as tf
+import os
+import math
+import time
 import networks
 import allPath
 import data_provider
+import tensorflow as tf
+
+from datetime import datetime
+
 
 FLAGS = networks.FLAGS
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 
 
 def eval_once(saver, metrics, summary_writer, summary_op):
@@ -38,29 +45,42 @@ def eval_once(saver, metrics, summary_writer, summary_op):
 
         # Start the queue runners.
         coord = tf.train.Coordinator()
+
+        # Initialize variables
+        init = tf.global_variables_initializer()
+        sess.run(init)
+
         threads = []
         try:
             for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
                 threads.extend(qr.create_threads(sess, coord=coord, daemon=True, start=True))
 
+            depend = tf.get_collection('MY_DEPEND')
+            with tf.control_dependencies(depend):
+                joint_op = tf.no_op()
+            
             num_iter = int(math.ceil(FLAGS.size_per_test / FLAGS.batch_size))
+
             avg_dice = 0
+            avg_rvd = 0
             step = 0
             while step < num_iter and not coord.should_stop():
-                dice, rvd = sess.run(metrics)
-                avg_dice += dice_coef
+                dice, rvd, _ = sess.run(metrics + [joint_op])
+                avg_dice += dice
+                avg_rvd += rvd
                 step += 1
 
             avg_dice /= step
+            avg_rvd /= step
             print('%s: dice avg = %.3f' % (datetime.now(), avg_dice))
-            print('%s: rvd avg = %.3f' % (datetime.now(), avg_dice))
+            print('%s: rvd avg = %.3f' % (datetime.now(), avg_rvd))
 
             summary = tf.Summary()
             summary.ParseFromString(sess.run(summary_op))
             summary.value.add(tag='dice_coef', simple_value=avg_dice)
-            summary.value.add(tag='rvd', simple_value=rvd)
+            summary.value.add(tag='rvd', simple_value=avg_rvd)
             summary_writer.add_summary(summary, global_step)
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             coord.request_stop(e)
 
         coord.request_stop()
@@ -75,9 +95,10 @@ def evaluate():
 
         # Build a Graph that computes the logits predictions from the
         # inference model.
-        logits, _ = networks.inference(images, train=False)
+        logits = networks.inference(images, train=False)
 
         dice_op = networks.dice_coef(logits, labels)
+        rvd = networks.loss_rvd(logits, labels)
 
         # Restore the moving average version of the learned variables for eval.
         variable_averages = tf.train.ExponentialMovingAverage(networks.FLAGS.moving_average_decay)
@@ -90,16 +111,15 @@ def evaluate():
         summary_writer = tf.summary.FileWriter(allPath.SA_LOG_TEST_DIR, g)
 
         while True:
-            eval_once(saver, dice_op, summary_writer, summary_op)
+            eval_once(saver, [dice_op, rvd], summary_writer, summary_op)
             if FLAGS.run_once:
                 break
             time.sleep(FLAGS.eval_interval_secs)
 
 
-def main(argv=None):  # pylint: disable=unused-argument
-    # if tf.gfile.Exists(allPath.SA_LOG_TEST_DIR):
-    #     tf.gfile.DeleteRecursively(allPath.SA_LOG_TEST_DIR)
-    # tf.gfile.MakeDirs(allPath.SA_LOG_TEST_DIR)
+def main(argv=None):
+    # if not tf.gfile.Exists(allPath.SA_LOG_TEST_IMG_DIR):
+    #     tf.gfile.MakeDirs(allPath.SA_LOG_TEST_IMG_DIR)
     evaluate()
 
 

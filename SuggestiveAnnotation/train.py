@@ -42,7 +42,7 @@ def train():
         images, labels = data_provider.input(eval_data=False, batch_size=batch_size)
 
         # Build a Graph that computes the logits predictions from the inference model.
-        logits, descripter = networks.inference(images, train=True)
+        logits = networks.inference(images, train=True)
 
         # Calculate loss.
         loss = networks.loss(logits, labels)
