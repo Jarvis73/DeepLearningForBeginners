@@ -29,23 +29,23 @@ tf.app.flags.DEFINE_float('weight_decay', 1e-4, """ Weight decay for L2 loss. ""
 tf.app.flags.DEFINE_float('moving_average_decay', 0.9995, """ The decay to use for the moving average. """)
 tf.app.flags.DEFINE_float('init_lr', 0.01, """ Initial learning rate. """)
 tf.app.flags.DEFINE_float('decay_rate', 0.1, """ Final learning rate. """)
-tf.app.flags.DEFINE_integer('epoches', 100, """ Training epochs. """)
+tf.app.flags.DEFINE_integer('epoches', 50, """ Training epochs. """)
 tf.app.flags.DEFINE_integer('log_frequency', 50, """ Logging frequency. """)
 tf.app.flags.DEFINE_string('log_dir', allPath.SA_LOG_TRAIN_DIR, """ Logging directory for training. """)
 tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log device placement.""")
 tf.app.flags.DEFINE_integer('test_frequency', 1, """ Test frequency per epoch """)
 tf.app.flags.DEFINE_integer('size_per_test', 100, """ Number of examples per test """)
-tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 17, """How often to run the eval.""")
-tf.app.flags.DEFINE_boolean('run_once', False, """Whether to run eval only once.""")
+tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 10, """How often to run the eval.""")
+tf.app.flags.DEFINE_boolean('run_once', True, """Whether to run eval only once.""")
 tf.app.flags.DEFINE_integer('num_show_image', 10, """ Number of output to save in test """)
 
 IMAGE_HEIGHT = data_provider.IMAGE_HEIGHT
 IMAGE_WIDTH = data_provider.IMAGE_WIDTH
 IMAGE_THICK = data_provider.IMAGE_THICK
 
-
 # File path or constant parameters
-NUM_EPOCHES_PER_DECAY = 30
+NUM_EPOCHES_PER_DECAY = 20
+
 
 def inference(images, train=True):
     """ Build the FCN model
@@ -115,12 +115,10 @@ def inference(images, train=True):
     with tf.variable_scope('output_x1') as scope:
         logits = tf.layers.conv3d(output_x3, FLAGS.num_classes, (1, 1, 1), padding='same', activation=tf.nn.softmax, name=scope.name)
 
-    tf.summary.image('prediction', data_provider.flat_cube_tensor(tf.expand_dims(logits[..., 1], -1), 8, 8))
+    _, logits_pred = tf.split(logits, 2, axis=4)
+    tf.summary.image('prediction255', data_provider.flat_cube_tensor(logits_pred * 255, 8, 8))
 
     return logits
-
-
-
 
 
 def dice_coef(logits, labels, axis=[1, 2, 3, 4], loss_type='jaccard', epsilon=1e-5):
@@ -132,7 +130,7 @@ def dice_coef(logits, labels, axis=[1, 2, 3, 4], loss_type='jaccard', epsilon=1e
         * logits: Tensor, inference output with softmax, shape [batch_size, t, h, w, 2]
         * labels: Tensor, actual labels, same size
         * loss_type : string, `jaccard` or `sorensen`, default is `jaccard`.
-        * axis : list of integer, All dimensions are reduced, default `[1,2,3,4]`.
+        * axis : list of integer, All dimensions are reduced, default `[1, 2, 3, 4]`.
         * epsilon : float
             This small value will be added to the numerator and denominator.
             If both output and target are empty, it makes sure dice is 1.
@@ -140,31 +138,27 @@ def dice_coef(logits, labels, axis=[1, 2, 3, 4], loss_type='jaccard', epsilon=1e
             then if smooth is very small, dice close to 0 (even the image values lower than the threshold),
             so in this case, higher smooth can have a higher dice.
     """
-    
-    intersection = tf.reduce_sum(logits * labels, axis=axis)
+    _, sparse_logits = tf.split(logits, 2, -1)
+    _, sparse_labels = tf.split(labels, 2, -1)
+    sparse_labels = tf.cast(sparse_labels, tf.float32)
+
+    intersection = tf.reduce_sum(sparse_labels * sparse_logits, axis=axis)
 
     if loss_type == 'jaccard':
-        l = tf.reduce_sum(logits * logits, axis=axis)
-        r = tf.reduce_sum(labels * labels, axis=axis)
+        left = tf.reduce_sum(sparse_logits * sparse_logits, axis=axis)
+        right = tf.reduce_sum(sparse_labels * sparse_labels, axis=axis)
     elif loss_type == 'sorensen':
-        l = tf.reduce_sum(logits, axis=axis)
-        r = tf.reduce_sum(labels, axis=axis)
+        left = tf.reduce_sum(sparse_logits, axis=axis)
+        right = tf.reduce_sum(sparse_labels, axis=axis)
     else:
-        raise Exception("Unknow loss_type")
+        raise Exception("Unknown loss_type")
 
-    dice = (2. * intersection + epsilon) / (l + r + epsilon)
+    dice = (2.0 * intersection + epsilon) / (left + right + epsilon)
 
     return tf.reduce_mean(dice)
 
 
-def loss_rvd(logits, labels, axis=[1, 2, 3, 4]):
-    """ Relative volume difference """
-    diff = tf.abs(logits - labels)
-    rvd = 0.5 * tf.reduce_sum(diff, axis=axis) / tf.reduce_sum(labels)
-    return rvd
-
-
-def softmax_cross_entropy(logits, labels):
+def loss_cross_entropy(logits, labels):
     """Calculate the loss from the logits and the labels.
     Args:
       logits: tensor, float - [batch_size, width, height, thick, num_classes].
@@ -175,6 +169,7 @@ def softmax_cross_entropy(logits, labels):
     """
     with tf.name_scope('cross_entropy'):
         logits = tf.reshape(logits, (-1, FLAGS.num_classes))
+        logits = tf.cast(logits, tf.float32)
         labels = tf.to_float(tf.reshape(labels, (-1, FLAGS.num_classes)))
 
         epsilon = tf.constant(value=1e-4)
@@ -191,7 +186,7 @@ def loss(logits, labels):
     # Calculate L2-loss of all trainable variables
     l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables()])
     
-    cross_entropy = softmax_cross_entropy(logits, labels)
+    cross_entropy = loss_cross_entropy(logits, labels)
     tf.add_to_collection('cross_entropy', cross_entropy)
 
     total_loss = tf.add(cross_entropy, l2_loss * FLAGS.weight_decay, name='total_loss')
@@ -277,8 +272,22 @@ def train(total_loss, global_step):
     return train_op
 
 
+def test(global_step):
+    # Track the moving averages of all trainable variables.
+    variable_averages = tf.train.ExponentialMovingAverage(FLAGS.moving_average_decay, global_step)
+    variables_averages_op = variable_averages.apply(tf.trainable_variables())
+
+    # Add control dependencies of batch normalization
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    joint_ops = tf.get_collection('MY_DEPEND')
+    with tf.control_dependencies(update_ops + joint_ops + [variables_averages_op]):
+        test_op = tf.no_op(name='test')
+
+    return test_op
+
+
 if __name__ == '__main__':
     image = tf.zeros(shape=(1, 64, 64, 64, 1))
-    logits, descriptor = inference(image, True)
+    logits = inference(image, True)
     print(logits)
     print(descriptor)

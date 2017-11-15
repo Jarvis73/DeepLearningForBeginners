@@ -562,7 +562,19 @@ def random_divide_dataset():
         for one_file in all_files[train_num+validation_num:]:
             mask = one_file[:-5] + 'm.png'
             f.write(one_file + ',' + mask + '\n')
-    
+
+
+def fill_hole(img):
+    h, w = img.shape
+    canvas = np.zeros((h + 2, w + 2), np.uint8)
+    canvas[1:h + 1, 1:w + 1] = img.copy()
+
+    mask = np.zeros((h + 4, w + 4), np.uint8)
+
+    cv2.floodFill(canvas, mask, (0, 0), 1)
+    canvas = canvas[1:h + 1, 1:w + 1].astype(np.bool)
+
+    return (~canvas | img.astype(np.uint8))
 
 
 if __name__ == '__main__':

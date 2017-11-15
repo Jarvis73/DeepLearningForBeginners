@@ -25,6 +25,7 @@ import networks
 FLAGS = networks.FLAGS
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
+
 def train():
     if not tf.gfile.Exists(FLAGS.log_dir):
         tf.gfile.MakeDirs(FLAGS.log_dir)
@@ -39,7 +40,7 @@ def train():
 
         # Get training patch
         batch_size = FLAGS.batch_size
-        images, labels = data_provider.input(eval_data=False, batch_size=batch_size)
+        _, images, labels = data_provider.input(eval_data=False, batch_size=batch_size)
 
         # Build a Graph that computes the logits predictions from the inference model.
         logits = networks.inference(images, train=True)
@@ -84,7 +85,7 @@ def train():
                        _LoggerHook()],
                 config=tf.ConfigProto(
                     log_device_placement=FLAGS.log_device_placement),
-                save_checkpoint_secs=1000, save_summaries_steps=40) as mon_sess:
+                save_checkpoint_secs=570, save_summaries_steps=50) as mon_sess:
 
             ckpt = tf.train.get_checkpoint_state(FLAGS.log_dir)
 
