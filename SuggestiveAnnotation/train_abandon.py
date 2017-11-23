@@ -23,7 +23,7 @@ import data_provider
 import networks
 
 FLAGS = networks.FLAGS
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '7'
 
 
 def train():
@@ -40,10 +40,11 @@ def train():
 
         # Get training patch
         batch_size = FLAGS.batch_size
-        _, images, labels = data_provider.input(eval_data=False, batch_size=batch_size)
+        images, labels = data_provider.input(eval_data=False, batch_size=batch_size)
 
         # Build a Graph that computes the logits predictions from the inference model.
         logits = networks.inference(images, train=True)
+        networks.show_pred(logits)
 
         # Calculate loss.
         loss = networks.loss(logits, labels)

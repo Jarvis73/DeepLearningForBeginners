@@ -14,14 +14,17 @@ from __future__ import division
 from __future__ import absolute_import
 
 from glob import glob
+from datetime import datetime
 from bs4 import BeautifulSoup
 from skimage.feature import canny
+from time import time, strftime, localtime
 from skimage.morphology import dilation, square
 
 import os
 import re
 import cv2
 import math
+import logging
 import allPath
 import numpy as np
 import prepare_data
@@ -217,11 +220,67 @@ def show_contour(image, mask, write_path):
     cv2.imwrite('color.png', image)
 
 
+class MyFormatter(logging.Formatter):
+    converter = datetime.fromtimestamp
+
+    def formatTime(self, record, datefmt=None):
+        ct = self.converter(record.created)
+        if datefmt:
+            s = ct.strftime(datefmt)
+        else:
+            t = ct.strftime("%Y-%m-%d %H:%M:%S")
+            s = "%s.%03d" % (t, record.msecs)
+        return s
+
+
+def create_logger(log_file=None, file=True, console=True):
+    """ Create a logger to write info to console and file.
+    ### Params:
+        * log_file - string: path to the logging file
+    ### Return:
+        A logger object of class getLogger()
+    """
+    if file:
+        if log_file is None:
+            log_name = strftime('%Y%m%d%H%M%S', localtime(time())) + '.log'
+            log_file = os.path.join(allPath.SA_LOGGING_DIR, log_name)
+
+        if os.path.exists(log_file):
+            os.remove(log_file)
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    formatter = MyFormatter("%(asctime)s: %(levelname).1s %(message)s")
+
+    if file:
+        # Create file handler
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
+        # Register handler
+        logger.addHandler(file_handler)
+
+    if console:
+        # Create console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+
+    return logger
+
+
 if __name__ == '__main__':
     if False:
         check_space_range()
 
-    if True:
+    if False:
         pid = '168833925301530155818375859047'
         find_xml(pid)
+
+    if True:
+        logger = create_logger('./logging.log')
+        logger.info("abcdefg")
+        logger.warning("12345")
 

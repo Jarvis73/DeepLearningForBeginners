@@ -546,19 +546,18 @@ def random_divide_dataset():
     all_files = glob(os.path.join(cube_dir, "*o.png"))
     np.random.shuffle(all_files)
 
-
     with open(os.path.join(allPath.SA_ROOT_DIR, "train.csv"), "w") as f:
-        f.write('original image, mask\n')
+        f.write('original image,mask\n')
         for one_file in all_files[:train_num]:
             mask = one_file[:-5] + 'm.png'
             f.write(one_file + ',' + mask + '\n')
     with open(os.path.join(allPath.SA_ROOT_DIR, "validation.csv"), "w") as f:
-        f.write('original image, mask\n')
+        f.write('original image,mask\n')
         for one_file in all_files[train_num:train_num+validation_num]:
             mask = one_file[:-5] + 'm.png'
             f.write(one_file + ',' + mask + '\n')
     with open(os.path.join(allPath.SA_ROOT_DIR, "test.csv"), "w") as f:
-        f.write('original image, mask\n')
+        f.write('original image,mask\n')
         for one_file in all_files[train_num+validation_num:]:
             mask = one_file[:-5] + 'm.png'
             f.write(one_file + ',' + mask + '\n')

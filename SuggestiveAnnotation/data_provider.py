@@ -23,9 +23,10 @@ import numpy as np
 IMAGE_HEIGHT = 64
 IMAGE_WIDTH = 64
 IMAGE_THICK = 64
-IMAGE_DEEPTH = 1
+IMAGE_DEPTH = 1
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 1200
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 150
+NUM_EXAMPLES_PER_EPOCH_FOR_TEST = 222
 NUM_PREPROCESS_THREADS = 16
 
 
@@ -91,27 +92,18 @@ def read_data_from_disk(all_files_queue):
     return result
 
 
-def get_read_input(eval_data):
+def get_read_input(pref):
     """ Fetch input data row by row from CSV files.
     ### Args:
-        * `eval_data`: integer, representing whether to read from train, validation or test directories.
+        * `pref`: string, train, validation or test directories.
     ### Returns:
         * `label`: Label of type tf.float32.
         * `image`: Image of type tf.float32, reshaped to correct dimensions.
     """
-    # Create queues that produce the filenames and labels to read.
-    if eval_data == 0:
-        pref = 'train'
-    elif eval_data == 1:
-        pref = 'validation'
-    elif eval_data == 2:
-        pref = 'test'
-    else:
-        raise ValueError("Wrong parameter: eval_data")
-
     # Generate a queue with the output string.
     # A QueueRunner for the Queue is added to the current Graph's QUEUE_RUNNER collection.
-    all_files_queue = tf.train.string_input_producer([os.path.join(allPath.SA_ROOT_DIR, pref + '.csv')])
+    all_files_queue = tf.train.string_input_producer([os.path.join(allPath.SA_ROOT_DIR, pref + '.csv')],
+                                                     shuffle=False, name=pref + '/str_input')
 
     read_input = read_data_from_disk(all_files_queue)
     image = tf.cast(read_input.uint8image, tf.float32)
@@ -142,12 +134,17 @@ def flat_cube_tensor(cube_tensor, rows, cols):
             tar_x = col * img_w
             joint = tf.assign(res_img[:, tar_y:tar_y+img_h, tar_x:tar_x+img_w, :], cube_tensor[:, row * cols + col, ...])
             tf.add_to_collection('MY_DEPEND', joint)
-    
+
     return res_img
 
 
-def _generate_image_and_label_batch(ori_image, std_image, label, min_queue_examples,
-                                    batch_size, shuffle):
+# def flat_cube_tensor(cube_tensor, rows, cols):
+#     assert rows * cols == cube_tensor.get_shape()[1]
+#     return cube_tensor[0, 28:36, ...]
+
+
+def _generate_image_and_label_batch(image, label, min_queue_examples,
+                                    batch_size, shuffle, name=None):
     """Construct a queued batch of images and labels.
 
     ### Args:
@@ -166,28 +163,28 @@ def _generate_image_and_label_batch(ori_image, std_image, label, min_queue_examp
     # read 'batch_size' images + labels from the example queue.
     # Each of these functions is implemented using a queue.
     # A QueueRunner for the queue is added to the current Graph's QUEUE_RUNNER collection.
-    num_preprocess_threads = NUM_PREPROCESS_THREADS
     if shuffle:
-        ori_images, std_images, labels = tf.train.shuffle_batch(
-            [ori_image, std_image, label],
+        images, labels = tf.train.shuffle_batch(
+            [image, label],
             batch_size=batch_size,
-            num_threads=num_preprocess_threads,
+            num_threads=NUM_PREPROCESS_THREADS,
             capacity=min_queue_examples + 3 * batch_size,
-            min_after_dequeue=min_queue_examples)
+            min_after_dequeue=min_queue_examples,
+            name=name + '/shuffle_batch' if name is not None else None)
     else:
-        ori_images, std_images, labels = tf.train.batch(
-            [ori_image, std_image, label],
+        images, labels = tf.train.batch(
+            [image, label],
             batch_size=batch_size,
-            num_threads=num_preprocess_threads,
-            capacity=min_queue_examples + 3 * batch_size)
+            num_threads=NUM_PREPROCESS_THREADS,
+            capacity=min_queue_examples + 3 * batch_size,
+            name=name + '/shuffle_batch' if name is not None else None)
 
     # Display the training images in the visualizer.
-    tf.summary.image('images', flat_cube_tensor(ori_images, 8, 8))
-    _, sparse_labels = tf.split(labels, 2, -1)
-    sparse_labels = tf.cast(sparse_labels, tf.float32)
-    tf.summary.image('labels', flat_cube_tensor(sparse_labels * 255, 8, 8))
+    tf.summary.image(name + '/images', flat_cube_tensor(images, 8, 8))
+    sparse_labels = tf.cast(labels, tf.float32)
+    tf.summary.image(name + '/labels', flat_cube_tensor(sparse_labels, 8, 8))
 
-    return ori_images, std_images, labels
+    return images, labels
 
 
 def input(eval_data, batch_size):
@@ -199,32 +196,36 @@ def input(eval_data, batch_size):
         * images: Images. 4D tensor of [batch_size, IMAGE_THICK, IMAGE_SIZE, IMAGE_SIZE,IMAGE_DEPTH] size.
         * labels: Labels. 4D tensor of [batch_size, IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEPTH] size.
     """
-    if not eval_data:
+    # Create queues that produce the filenames and labels to read.
+    if eval_data == 0:
+        pref = 'train'
         num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
-    else:
+    elif eval_data == 1:
+        pref = 'validation'
         num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+    elif eval_data == 2:
+        pref = 'test'
+        num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TEST
+    else:
+        raise ValueError("Wrong parameter: eval_data")
     
-    label, image = get_read_input(eval_data)
+    label, image = get_read_input(pref)
 
     # # Divide the center 32x32x32
     # ox, oy, oz = IMAGE_THICK // 2, IMAGE_HEIGHT // 2, IMAGE_WIDTH // 2
     # image = image[ox:ox+IMAGE_THICK, oy:oy+IMAGE_HEIGHT, oz:oz+IMAGE_WIDTH]
     # label = label[ox:ox+IMAGE_THICK, oy:oy+IMAGE_HEIGHT, oz:oz+IMAGE_WIDTH]
 
-    # Subtract off the mean and divide by the variance of the pixels.
-    float_image = helpers.per_image_standardization(image)
-
     # Set max intensity to 1
+    float_image = tf.divide(image, 255.0)
     int_label = tf.cast(tf.divide(label, 255), tf.int32)
-    int_label = tf.squeeze(int_label, axis=-1)
-    int_label = tf.one_hot(int_label, depth=2)
 
     # Set the shapes of tensors.
     # tf.train.batch or tf.train.shuffle_batch requires all shapes of the tensor must be fully defined
     # image: [thick ? ? depth] --> [thick, height, width, depth]
-    image.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEPTH])
-    float_image.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEPTH])
-    int_label.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, 2])
+    image.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEPTH])
+    float_image.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEPTH])
+    int_label.set_shape([IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, 1])
 
     # Ensure that the random shuffling has good mixing properties.
     min_fraction_of_examples_in_queue = 0.4
@@ -232,9 +233,8 @@ def input(eval_data, batch_size):
 
     # Generate a batch of images and labels by building up a queue of examples.
     shuffle = False if eval_data else True
-    return _generate_image_and_label_batch(image, float_image, int_label,
-                                           min_queue_examples, batch_size,
-                                           shuffle=shuffle)
+    return _generate_image_and_label_batch(float_image, int_label, min_queue_examples, batch_size,
+                                           shuffle=shuffle, name=pref)
 
 
 def distorted_input(eval_data, batch_size):

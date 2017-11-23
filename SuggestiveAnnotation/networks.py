@@ -16,6 +16,7 @@ from __future__ import absolute_import
 import allPath
 import helpers
 import data_provider
+import numpy as np
 import tensorflow as tf
 
 FLAGS = tf.app.flags.FLAGS
@@ -27,29 +28,37 @@ tf.app.flags.DEFINE_integer('batch_size', 1, """ Number of images to process in 
 tf.app.flags.DEFINE_integer('num_classes', 2, """ Number of output classes. """)
 tf.app.flags.DEFINE_float('weight_decay', 1e-4, """ Weight decay for L2 loss. """)
 tf.app.flags.DEFINE_float('moving_average_decay', 0.9995, """ The decay to use for the moving average. """)
-tf.app.flags.DEFINE_float('init_lr', 0.01, """ Initial learning rate. """)
+tf.app.flags.DEFINE_float('init_lr', 0.05, """ Initial learning rate. """)
 tf.app.flags.DEFINE_float('decay_rate', 0.1, """ Final learning rate. """)
-tf.app.flags.DEFINE_integer('epoches', 50, """ Training epochs. """)
-tf.app.flags.DEFINE_integer('log_frequency', 50, """ Logging frequency. """)
+tf.app.flags.DEFINE_integer('epochs', 150, """ Training epochs. """)
+tf.app.flags.DEFINE_integer('log_frequency', 50, """ Logging frequency, steps """)
 tf.app.flags.DEFINE_string('log_dir', allPath.SA_LOG_TRAIN_DIR, """ Logging directory for training. """)
 tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log device placement.""")
-tf.app.flags.DEFINE_integer('test_frequency', 1, """ Test frequency per epoch """)
+tf.app.flags.DEFINE_integer('test_frequency', 600, """ Test frequency, steps """)
 tf.app.flags.DEFINE_integer('size_per_test', 100, """ Number of examples per test """)
 tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 10, """How often to run the eval.""")
-tf.app.flags.DEFINE_boolean('run_once', True, """Whether to run eval only once.""")
-tf.app.flags.DEFINE_integer('num_show_image', 10, """ Number of output to save in test """)
+tf.app.flags.DEFINE_boolean('run_once', True, """ Whether to run eval only once.""")
+tf.app.flags.DEFINE_integer('dump_number', 10, """ Number of the images to save when testing""")
 
 IMAGE_HEIGHT = data_provider.IMAGE_HEIGHT
 IMAGE_WIDTH = data_provider.IMAGE_WIDTH
 IMAGE_THICK = data_provider.IMAGE_THICK
+IMAGE_DEPTH = data_provider.IMAGE_DEPTH
 
 # File path or constant parameters
-NUM_EPOCHES_PER_DECAY = 20
+NUM_EPOCHES_PER_DECAY = 100
 
 
-def inference(images, train=True):
+def inference(train=True):
     """ Build the FCN model
     """
+
+    images = tf.placeholder(dtype=tf.float32, shape=[
+        FLAGS.batch_size, IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEPTH
+    ])
+    labels = tf.placeholder(dtype=tf.int32, shape=[
+        FLAGS.batch_size, IMAGE_THICK, IMAGE_HEIGHT, IMAGE_WIDTH, 1
+    ])
 
     layer_in = images
     feature_out = FLAGS.feature_root / 2
@@ -113,15 +122,13 @@ def inference(images, train=True):
         output_x3 = tf.layers.conv3d(outputs, FLAGS.num_classes, (3, 3, 3), padding='same', name=scope.name)
         output_x3 = helpers.bn_relu(output_x3, train, name=scope.name)
     with tf.variable_scope('output_x1') as scope:
-        logits = tf.layers.conv3d(output_x3, FLAGS.num_classes, (1, 1, 1), padding='same', activation=tf.nn.softmax, name=scope.name)
+        logits = tf.layers.conv3d(output_x3, FLAGS.num_classes, (1, 1, 1), padding='same', name=scope.name)
 
-    _, logits_pred = tf.split(logits, 2, axis=4)
-    tf.summary.image('prediction255', data_provider.flat_cube_tensor(logits_pred * 255, 8, 8))
-
-    return logits
+    return images, labels, logits
+    # return logits
 
 
-def dice_coef(logits, labels, axis=[1, 2, 3, 4], loss_type='jaccard', epsilon=1e-5):
+def dice_coef(logits, labels, axis=[1, 2, 3, 4], loss_type='jaccard', epsilon=1e-5, threshold=None):
     """ Soft dice (Sørensen or Jaccard) coefficient for comparing the similarity
     of two batch of data, usually be used for binary image segmentation
     i.e. labels are binary. The coefficient between 0 to 1, 1 means totally match.
@@ -138,9 +145,12 @@ def dice_coef(logits, labels, axis=[1, 2, 3, 4], loss_type='jaccard', epsilon=1e
             then if smooth is very small, dice close to 0 (even the image values lower than the threshold),
             so in this case, higher smooth can have a higher dice.
     """
-    _, sparse_logits = tf.split(logits, 2, -1)
-    _, sparse_labels = tf.split(labels, 2, -1)
-    sparse_labels = tf.cast(sparse_labels, tf.float32)
+    _, sparse_logits = tf.split(tf.nn.softmax(logits), 2, -1)
+    if threshold is not None:
+        threshold_tensor = tf.ones_like(sparse_logits) * threshold
+        sparse_logits = tf.cast(tf.greater_equal(sparse_logits, threshold_tensor), tf.float32)
+
+    sparse_labels = tf.cast(labels, tf.float32)
 
     intersection = tf.reduce_sum(sparse_labels * sparse_logits, axis=axis)
 
@@ -168,14 +178,7 @@ def loss_cross_entropy(logits, labels):
       loss: Loss tensor of type float.
     """
     with tf.name_scope('cross_entropy'):
-        logits = tf.reshape(logits, (-1, FLAGS.num_classes))
-        logits = tf.cast(logits, tf.float32)
-        labels = tf.to_float(tf.reshape(labels, (-1, FLAGS.num_classes)))
-
-        epsilon = tf.constant(value=1e-4)
-
-        cross_entropy = -tf.reduce_sum(labels * tf.log(logits + epsilon), reduction_indices=[1])
-
+        cross_entropy = tf.losses.sparse_softmax_cross_entropy(tf.squeeze(labels, squeeze_dims=[4]), logits)
         cross_entropy_mean = tf.reduce_mean(cross_entropy, name='xentropy_mean')
     return cross_entropy_mean
 
@@ -191,6 +194,35 @@ def loss(logits, labels):
 
     total_loss = tf.add(cross_entropy, l2_loss * FLAGS.weight_decay, name='total_loss')
     return total_loss
+
+
+def show_pred(logits):
+    # Index 1 of fuse layers correspond to foreground, so discard index 0.
+    _, sparse_logits = tf.split(tf.cast(tf.nn.softmax(logits), tf.float32), 2, 4)
+
+    tf.summary.image('prediction', data_provider.flat_cube_tensor(sparse_logits, 8, 8))
+
+    return sparse_logits
+
+
+def get_pred(logits):
+    _, sparse_logits = tf.split(tf.cast(tf.nn.softmax(logits), tf.float32), 2, 4)
+    return sparse_logits
+
+
+def predict(logits, images_ph, labels_ph, model_path, test_images):
+    init = tf.global_variables_initializer()
+    with tf.Session() as sess:
+        sess.run(init)
+
+        restore(sess, model_path)
+
+        shape = test_images.shape
+        shape[-1] = 1
+        label_dummy = np.empty(shape)
+        prediction = sess.run(get_pred(logits), feed_dict={images_ph: test_images, labels_ph: label_dummy})
+
+    return prediction
 
 
 def add_loss_summaries(total_loss):
@@ -260,34 +292,32 @@ def train(total_loss, global_step):
             tf.summary.histogram(var.op.name + '/gradients', grad)
 
     # Track the moving averages of all trainable variables.
-    variable_averages = tf.train.ExponentialMovingAverage(FLAGS.moving_average_decay, global_step)
-    variables_averages_op = variable_averages.apply(tf.trainable_variables())
+    # variable_averages = tf.train.ExponentialMovingAverage(FLAGS.moving_average_decay, global_step)
+    # variables_averages_op = variable_averages.apply(tf.trainable_variables())
 
     # Add control dependencies of batch normalization
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     joint_ops = tf.get_collection('MY_DEPEND')
-    with tf.control_dependencies(update_ops + joint_ops + [apply_gradient_op, variables_averages_op]):
+    with tf.control_dependencies(update_ops + joint_ops + [apply_gradient_op]):
         train_op = tf.no_op(name='train')
 
     return train_op
 
 
-def test(global_step):
-    # Track the moving averages of all trainable variables.
-    variable_averages = tf.train.ExponentialMovingAverage(FLAGS.moving_average_decay, global_step)
-    variables_averages_op = variable_averages.apply(tf.trainable_variables())
-
-    # Add control dependencies of batch normalization
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    joint_ops = tf.get_collection('MY_DEPEND')
-    with tf.control_dependencies(update_ops + joint_ops + [variables_averages_op]):
-        test_op = tf.no_op(name='test')
-
-    return test_op
+def normal_input(istrain):
+    images_tensor, labels_tensor = data_provider.distorted_input(eval_data=istrain, batch_size=FLAGS.batch_size)
+    sess = tf.Session()
+    images, labels = sess.run([images_tensor, labels_tensor])
+    return images, labels
 
 
-if __name__ == '__main__':
-    image = tf.zeros(shape=(1, 64, 64, 64, 1))
-    logits = inference(image, True)
-    print(logits)
-    print(descriptor)
+def distorted_input(istrain):
+    images_tensor, labels_tensor = data_provider.distorted_input(eval_data=istrain, batch_size=FLAGS.batch_size)
+    sess = tf.Session()
+    images, labels = sess.run([images_tensor, labels_tensor])
+    return images, labels
+
+
+def save(sess, saver, model_path, global_step):
+    save_path = saver.save(sess, model_path, global_step)
+    return save_path
