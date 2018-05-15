@@ -22,33 +22,7 @@
             <state relative-caret-position="7644">
               <caret line="368" column="0" lean-forward="false" selection-start-line="368" selection-start-column="0" selection-end-line="368" selection-end-column="0" />
               <folding>
-                <marker date="1506351789222" expanded="true" signature="6874:9878" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="7769:9785" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="7860:8306" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="9629:9785" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="9926:11027" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="9931:10204" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1506351789222" expanded="true" signature="10274:11027" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="11063:11815" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="11068:11387" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1506351789222" expanded="true" signature="11392:11577" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="11854:12860" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="11859:12172" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1506351789222" expanded="true" signature="12434:12562" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="12598:12831" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="12607:12719" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="12898:14972" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="12903:13246" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1506351789222" expanded="true" signature="14035:14193" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="14493:14589" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="15010:15609" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="15015:15263" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1506351789222" expanded="true" signature="15640:16082" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="15645:15827" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1506351789222" expanded="true" signature="16119:16638" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="16124:16436" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1506351789222" expanded="true" signature="16677:17326" ph="..." />
-                <marker date="1506351789222" expanded="true" signature="16682:17099" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+                <marker date="1507272554669" expanded="true" signature="12913:13240" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
               </folding>
             </state>
           </provider>
@@ -57,9 +31,12 @@
       <file leaf-file-name="DCAN_train.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/DCAN_train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1155">
-              <caret line="58" column="47" lean-forward="false" selection-start-line="58" selection-start-column="47" selection-end-line="58" selection-end-column="47" />
-              <folding />
+            <state relative-caret-position="1092">
+              <caret line="59" column="47" lean-forward="false" selection-start-line="59" selection-start-column="47" selection-end-line="59" selection-end-column="47" />
+              <folding>
+                <marker date="1507272577921" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+                <marker date="1507272577921" expanded="true" signature="3969:4315" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -67,9 +44,11 @@
       <file leaf-file-name="prepare_data.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/prepare_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="21">
-              <caret line="174" column="0" lean-forward="false" selection-start-line="174" selection-start-column="0" selection-end-line="174" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="3423">
+              <caret line="172" column="0" lean-forward="false" selection-start-line="172" selection-start-column="0" selection-end-line="172" selection-end-column="0" />
+              <folding>
+                <marker date="1507272642694" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -77,8 +56,8 @@
       <file leaf-file-name="DCAN_test.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/DCAN_test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="466">
-              <caret line="77" column="36" lean-forward="true" selection-start-line="77" selection-start-column="36" selection-end-line="77" selection-end-column="36" />
+            <state relative-caret-position="546">
+              <caret line="96" column="0" lean-forward="true" selection-start-line="96" selection-start-column="0" selection-end-line="96" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -129,6 +108,7 @@
     </navigator>
     <panes>
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -140,7 +120,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -246,8 +225,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1796875" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -281,7 +259,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/prepare_data.py</url>
-          <line>217</line>
+          <line>215</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -297,36 +275,88 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/DCAN.py">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7644">
+          <caret line="368" column="0" lean-forward="false" selection-start-line="368" selection-start-column="0" selection-end-line="368" selection-end-column="0" />
+          <folding>
+            <marker date="1507272554669" expanded="true" signature="12913:13240" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/DCAN_train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1239">
+          <caret line="59" column="47" lean-forward="false" selection-start-line="59" selection-start-column="47" selection-end-line="59" selection-end-column="47" />
+          <folding>
+            <marker date="1507272577921" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+            <marker date="1507272577921" expanded="true" signature="3969:4315" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/prepare_data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3612">
+          <caret line="172" column="0" lean-forward="false" selection-start-line="172" selection-start-column="0" selection-end-line="172" selection-end-column="0" />
+          <folding>
+            <marker date="1507272642694" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/DCAN_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1869">
+          <caret line="96" column="0" lean-forward="true" selection-start-line="96" selection-start-column="0" selection-end-line="96" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/DCAN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <marker date="1507272554669" expanded="true" signature="12913:13240" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/DCAN_train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1218">
+          <caret line="58" column="47" lean-forward="false" selection-start-line="58" selection-start-column="47" selection-end-line="58" selection-end-column="47" />
+          <folding>
+            <marker date="1507272577921" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+            <marker date="1507272577921" expanded="true" signature="3969:4315" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/prepare_data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3654">
+          <caret line="174" column="0" lean-forward="false" selection-start-line="174" selection-start-column="0" selection-end-line="174" selection-end-column="0" />
+          <folding>
+            <marker date="1507272642694" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/DCAN_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1617">
+          <caret line="77" column="36" lean-forward="true" selection-start-line="77" selection-start-column="36" selection-end-line="77" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/DCAN.py">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7770">
           <caret line="370" column="0" lean-forward="false" selection-start-line="370" selection-start-column="0" selection-end-line="370" selection-end-column="0" />
           <folding>
-            <marker date="1506351789222" expanded="true" signature="6874:9878" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7769:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7860:8306" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9629:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9926:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9931:10204" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="10274:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11063:11815" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11068:11387" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="11392:11577" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11854:12860" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11859:12172" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="12434:12562" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12598:12831" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12607:12719" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12898:14972" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12903:13246" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="14035:14193" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="14493:14589" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15010:15609" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15015:15263" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="15640:16082" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15645:15827" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16119:16638" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16124:16436" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16677:17326" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16682:17099" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+            <marker date="1507272554669" expanded="true" signature="12913:13240" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
           </folding>
         </state>
       </provider>
@@ -335,7 +365,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1029">
           <caret line="49" column="47" lean-forward="true" selection-start-line="49" selection-start-column="47" selection-end-line="49" selection-end-column="47" />
-          <folding />
+          <folding>
+            <marker date="1507272577921" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+            <marker date="1507272577921" expanded="true" signature="3969:4315" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -351,7 +384,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3486">
           <caret line="166" column="0" lean-forward="true" selection-start-line="166" selection-start-column="0" selection-end-line="166" selection-end-column="0" />
-          <folding />
+          <folding>
+            <marker date="1507272642694" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -360,33 +395,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <marker date="1506351789222" expanded="true" signature="6874:9878" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7769:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7860:8306" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9629:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9926:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9931:10204" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="10274:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11063:11815" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11068:11387" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="11392:11577" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11854:12860" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11859:12172" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="12434:12562" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12598:12831" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12607:12719" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12898:14972" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12903:13246" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="14035:14193" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="14493:14589" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15010:15609" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15015:15263" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="15640:16082" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15645:15827" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16119:16638" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16124:16436" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16677:17326" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16682:17099" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+            <marker date="1507272554669" expanded="true" signature="12913:13240" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
           </folding>
         </state>
       </provider>
@@ -395,7 +404,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1092">
           <caret line="57" column="26" lean-forward="true" selection-start-line="57" selection-start-column="26" selection-end-line="57" selection-end-column="26" />
-          <folding />
+          <folding>
+            <marker date="1507272577921" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+            <marker date="1507272577921" expanded="true" signature="3969:4315" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -403,7 +415,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="903">
           <caret line="51" column="32" lean-forward="true" selection-start-line="51" selection-start-column="32" selection-end-line="51" selection-end-column="32" />
-          <folding />
+          <folding>
+            <marker date="1507272642694" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -420,33 +434,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <marker date="1506351789222" expanded="true" signature="6874:9878" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7769:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7860:8306" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9629:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9926:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9931:10204" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="10274:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11063:11815" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11068:11387" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="11392:11577" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11854:12860" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11859:12172" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="12434:12562" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12598:12831" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12607:12719" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12898:14972" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12903:13246" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="14035:14193" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="14493:14589" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15010:15609" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15015:15263" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="15640:16082" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15645:15827" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16119:16638" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16124:16436" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16677:17326" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16682:17099" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+            <marker date="1507272554669" expanded="true" signature="12913:13240" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
           </folding>
         </state>
       </provider>
@@ -455,7 +443,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="924">
           <caret line="44" column="46" lean-forward="true" selection-start-line="44" selection-start-column="46" selection-end-line="44" selection-end-column="46" />
-          <folding />
+          <folding>
+            <marker date="1507272577921" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+            <marker date="1507272577921" expanded="true" signature="3969:4315" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -463,7 +454,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="903">
           <caret line="43" column="0" lean-forward="true" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
-          <folding />
+          <folding>
+            <marker date="1507272642694" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -480,33 +473,7 @@
         <state relative-caret-position="7812">
           <caret line="377" column="0" lean-forward="false" selection-start-line="377" selection-start-column="0" selection-end-line="377" selection-end-column="0" />
           <folding>
-            <marker date="1506351789222" expanded="true" signature="6874:9878" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7769:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7860:8306" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9629:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9926:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9931:10204" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="10274:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11063:11815" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11068:11387" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="11392:11577" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11854:12860" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11859:12172" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="12434:12562" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12598:12831" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12607:12719" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12898:14972" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12903:13246" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="14035:14193" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="14493:14589" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15010:15609" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15015:15263" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="15640:16082" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15645:15827" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16119:16638" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16124:16436" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16677:17326" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16682:17099" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+            <marker date="1507272554669" expanded="true" signature="12913:13240" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
           </folding>
         </state>
       </provider>
@@ -519,75 +486,26 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/layers.py" />
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/training/optimizer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8085">
-          <caret line="385" column="0" lean-forward="false" selection-start-line="385" selection-start-column="0" selection-end-line="385" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/tensor_shape.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="11655">
-          <caret line="560" column="0" lean-forward="false" selection-start-line="560" selection-start-column="0" selection-end-line="560" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/ops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9282">
-          <caret line="442" column="0" lean-forward="false" selection-start-line="442" selection-start-column="0" selection-end-line="442" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/ops/variables.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="23541">
-          <caret line="1137" column="0" lean-forward="false" selection-start-line="1137" selection-start-column="0" selection-end-line="1137" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/training/optimizer.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/tensor_shape.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/ops.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/ops/variables.py" />
     <entry file="file://$PROJECT_DIR$/DCAN_train.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="126">
           <caret line="6" column="21" lean-forward="true" selection-start-line="6" selection-start-column="21" selection-end-line="6" selection-end-column="21" />
-          <folding />
+          <folding>
+            <marker date="1507272577921" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+            <marker date="1507272577921" expanded="true" signature="3969:4315" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/ops/gradients_impl.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="11655">
-          <caret line="555" column="48" lean-forward="false" selection-start-line="555" selection-start-column="48" selection-end-line="555" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/ops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8652">
-          <caret line="442" column="0" lean-forward="false" selection-start-line="442" selection-start-column="0" selection-end-line="442" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/tensor_shape.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="11655">
-          <caret line="560" column="0" lean-forward="false" selection-start-line="560" selection-start-column="0" selection-end-line="560" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/ops/gradients_impl.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/ops.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/tensor_shape.py" />
     <entry file="file://$PROJECT_DIR$/layers.py" />
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/ops/variables.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="368">
-          <caret line="1137" column="0" lean-forward="false" selection-start-line="1137" selection-start-column="0" selection-end-line="1137" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/ops/variables.py" />
     <entry file="file://$PROJECT_DIR$/count">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
@@ -595,91 +513,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/training/optimizer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="385" column="0" lean-forward="false" selection-start-line="385" selection-start-column="0" selection-end-line="385" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/ops/gradients_impl.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="488" column="0" lean-forward="false" selection-start-line="488" selection-start-column="0" selection-end-line="488" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/errors_impl.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="369">
-          <caret line="467" column="0" lean-forward="false" selection-start-line="467" selection-start-column="0" selection-end-line="467" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/training/input.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="1216" column="0" lean-forward="false" selection-start-line="1216" selection-start-column="0" selection-end-line="1216" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/training/optimizer.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/ops/gradients_impl.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/framework/errors_impl.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/tensorflow/python/training/input.py" />
     <entry file="file://$PROJECT_DIR$/DCAN.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7644">
           <caret line="368" column="0" lean-forward="false" selection-start-line="368" selection-start-column="0" selection-end-line="368" selection-end-column="0" />
           <folding>
-            <marker date="1506351789222" expanded="true" signature="6874:9878" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7769:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="7860:8306" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9629:9785" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9926:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="9931:10204" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="10274:11027" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11063:11815" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11068:11387" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="11392:11577" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11854:12860" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="11859:12172" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="12434:12562" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12598:12831" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12607:12719" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12898:14972" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="12903:13246" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="14035:14193" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="14493:14589" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15010:15609" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15015:15263" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="15640:16082" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="15645:15827" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16119:16638" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16124:16436" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1506351789222" expanded="true" signature="16677:17326" ph="..." />
-            <marker date="1506351789222" expanded="true" signature="16682:17099" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+            <marker date="1507272554669" expanded="true" signature="12913:13240" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/DCAN_train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1155">
-          <caret line="58" column="47" lean-forward="false" selection-start-line="58" selection-start-column="47" selection-end-line="58" selection-end-column="47" />
-          <folding />
+        <state relative-caret-position="1092">
+          <caret line="59" column="47" lean-forward="false" selection-start-line="59" selection-start-column="47" selection-end-line="59" selection-end-column="47" />
+          <folding>
+            <marker date="1507272577921" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+            <marker date="1507272577921" expanded="true" signature="3969:4315" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/prepare_data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="21">
-          <caret line="174" column="0" lean-forward="false" selection-start-line="174" selection-start-column="0" selection-end-line="174" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="3423">
+          <caret line="172" column="0" lean-forward="false" selection-start-line="172" selection-start-column="0" selection-end-line="172" selection-end-column="0" />
+          <folding>
+            <marker date="1507272642694" expanded="true" signature="48:52" ph="&quot;&quot;&quot;UNet implementation...&quot;&quot;&quot;" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/DCAN_test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="466">
-          <caret line="77" column="36" lean-forward="true" selection-start-line="77" selection-start-column="36" selection-end-line="77" selection-end-column="36" />
+        <state relative-caret-position="546">
+          <caret line="96" column="0" lean-forward="true" selection-start-line="96" selection-start-column="0" selection-end-line="96" selection-end-column="0" />
           <folding />
         </state>
       </provider>
