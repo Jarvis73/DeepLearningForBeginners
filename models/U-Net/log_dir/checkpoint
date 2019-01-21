@@ -1,2 +1,0 @@
-model_checkpoint_path: "/home/jarvis/documents/MLearning/DeepLearning/models/U-Net/log_dir/model.cpkt"
-all_model_checkpoint_paths: "/home/jarvis/documents/MLearning/DeepLearning/models/U-Net/log_dir/model.cpkt"
