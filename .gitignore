@@ -100,5 +100,7 @@ ENV/
 # mypy
 .mypy_cache/
 
-# log_dir
+# User defined
 TensorBoard/log_dir
+.vscode
+PyTorch/Code/data
