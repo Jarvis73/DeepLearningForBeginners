@@ -4,3 +4,5 @@
 |:--:|:--:|:--:|:--:|
 |0|markdown|[Install Tensorflow](./0-Install-Tensorflow.md)| Tensorflow 1.x 安装|
 |1|jupyter notebook|[First Neural Network](./1-First-Neural-Network.ipynb)| 使用 Tensorflow 编写第一个分类器 |
+|2|jupyter notebook|[Mirrored Stragety](./2-MirroredStrategy.ipynb)| 最简单的多GPU策略 |
+

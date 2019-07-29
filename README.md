@@ -3,11 +3,12 @@ Deep learning with Tensorflow/PyTorch
 
 ## 1. Toturial
 
-### 1.1 Tensorflow
+### 1.1 [Tensorflow](https://github.com/Jarvis73/DeepLearningForBeginners/tree/master/Tensorflow)
 0. Install Tensorflow
 1. First Neural Network on CPU
+2. Multi-GPUs: Mirrored Strategy
 
-### 1.2 PyTorch
+### 1.2 [PyTorch](https://github.com/Jarvis73/DeepLearningForBeginners/tree/master/PyTorch)
 0. Install PyTorch (ommit)
 1. First Neural Network on CPU
 
