@@ -5,8 +5,10 @@ Deep learning with Tensorflow/PyTorch
 
 ### 1.1 [Tensorflow](https://github.com/Jarvis73/DeepLearningForBeginners/tree/master/Tensorflow)
 0. Install Tensorflow
-1. First Neural Network on CPU
-2. Multi-GPUs: Mirrored Strategy
+1. Training first neural network on CPU
+2. Training model with validation
+3. Training first convolutional neural network on CPU
+4. Multi-GPUs: Mirrored Strategy
 
 ### 1.2 [PyTorch](https://github.com/Jarvis73/DeepLearningForBeginners/tree/master/PyTorch)
 0. Install PyTorch (ommit)
@@ -23,7 +25,7 @@ Deep learning with Tensorflow/PyTorch
 * [ ] TF-Estimator mnist: TF-Estimator toturial (Use `tf.contrib.slim` to create model and `tf.estimator` to train model)
 * [ ] TF-Estimator mnist: TF-Estimator toturial (Use `tf.keras` to create model and `tf.estimator` to train model)
 * [ ] GPU Fashion MNIST
-* [ ] Fashion MNIST + LeNet
+* [x] Fashion MNIST + LeNet
 * [ ] Cifar-10 classification + AlexNet
 * [ ] Cifar-10 classification + VGG
 * [ ] Cifar-10 classification + ResNet

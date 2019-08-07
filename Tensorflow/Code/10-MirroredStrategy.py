@@ -1,5 +1,5 @@
 import argparse
-import tensorflow as tf
+import tensorflow as tf    # Assert tf.VERSION >= 1.13
 from tensorflow import keras
 from tensorflow.python.distribute import values
 from tensorflow.python.util import nest
